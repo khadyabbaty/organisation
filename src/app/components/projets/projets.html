@@ -1,0 +1,240 @@
+<div class="projects-page">
+  <!-- Header with Search & Filter -->
+  <div class="page-header">
+    <h1 class="page-title">Mes Projets</h1>
+
+    <div class="search-filter">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Rechercher un projet..."
+          [(ngModel)]="search"
+        >
+      </div>
+
+      <select class="filter-select" [(ngModel)]="statut">
+        <option value="ALL">Tous les statuts</option>
+        <option value="EN_COURS">En cours</option>
+        <option value="TERMINE">Terminé</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner-large"></div>
+    <p>Chargement des projets...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-state">
+    <span class="error-icon">⚠️</span>
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="chargerProjets()">Réessayer</button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && !error && filtered.length === 0" class="empty-state">
+    <div class="empty-icon">📋</div>
+    <h3>Aucun projet trouvé</h3>
+    <p>{{ search ? 'Aucun projet ne correspond à votre recherche.' : 'Commencez par créer votre premier projet.' }}</p>
+  </div>
+
+  <!-- Projects Grid -->
+  <div class="projects-grid" *ngIf="!loading && !error && filtered.length">
+    <div class="project-card" *ngFor="let p of filtered; trackBy: trackById">
+
+      <!-- Media Section -->
+      <div class="project-media">
+        <ng-container [ngSwitch]="p.mediaType">
+          <img
+            *ngSwitchCase="'image'"
+            [src]="mediaSrc(p)"
+            (error)="onImgError($event)"
+            alt="Illustration du projet"
+            class="media-img"
+          >
+
+          <video
+            *ngSwitchCase="'video'"
+            [src]="mediaSrc(p)"
+            preload="metadata"
+            controls
+            playsinline
+            class="media-video"
+          ></video>
+
+          <img
+            *ngSwitchDefault
+            [src]="mediaSrc(p)"
+            (error)="onImgError($event)"
+            alt="Illustration du projet"
+            class="media-img"
+          >
+        </ng-container>
+
+        <div class="media-overlay">
+          <span *ngIf="p.urgent" class="badge-urgent">🔥 URGENT</span>
+        </div>
+      </div>
+
+      <!-- Card Body -->
+      <div class="project-body">
+        <div class="project-header">
+          <h3 class="project-title">{{ p.titre }}</h3>
+          <span
+            class="status-badge"
+            [class.status-active]="p.statut === 'EN_COURS'"
+            [class.status-completed]="p.statut === 'TERMINE'"
+          >
+            {{ p.statut === 'EN_COURS' ? 'En cours' : 'Terminé' }}
+          </span>
+        </div>
+
+        <p class="project-description">{{ p.description || 'Aucune description' }}</p>
+
+        <div class="project-meta">
+          <div class="meta-item">
+            <span class="meta-icon">🏢</span>
+            <span class="meta-text">{{ p.organisationNom }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-icon">📅</span>
+            <span class="meta-text">{{ p.dateCreation | date:'dd/MM/yyyy' }}</span>
+          </div>
+        </div>
+
+        <div class="project-actions">
+          <button
+            class="btn-action btn-edit"
+            title="Modifier"
+            (click)="modifierProjet(p)"
+            [disabled]="loading"
+          >
+            <span class="btn-icon">✏️</span>
+            <span class="btn-text">Modifier</span>
+          </button>
+
+          <button
+            class="btn-action btn-delete"
+            title="Supprimer"
+            (click)="supprimerProjet(p.id)"
+            [disabled]="loading"
+          >
+            <span class="btn-icon">🗑️</span>
+            <span class="btn-text">Supprimer</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit Project -->
+<div class="modal-overlay" *ngIf="projetModif" (click)="fermerModal()"></div>
+<div class="modal-container" *ngIf="projetModif" (click)="$event.stopPropagation()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2 class="modal-title">✏️ Modifier le projet</h2>
+      <button class="btn-close" (click)="fermerModal()" aria-label="Fermer">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="titre" class="form-label">Titre du projet</label>
+        <input
+          id="titre"
+          type="text"
+          class="form-input"
+          [(ngModel)]="projetModif.titre"
+          placeholder="Ex: Construction d'une école"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="description" class="form-label">Description</label>
+        <textarea
+          id="description"
+          class="form-textarea"
+          [(ngModel)]="projetModif.description"
+          placeholder="Décrivez votre projet en détail..."
+          rows="4"
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="statut" class="form-label">Statut</label>
+          <select id="statut" class="form-select" [(ngModel)]="projetModif.statut">
+            <option value="EN_COURS">En cours</option>
+            <option value="TERMINE">Terminé</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-checkbox">
+            <input type="checkbox" [(ngModel)]="projetModif.urgent">
+            <span class="checkbox-label">
+              Marquer comme urgent
+              <span *ngIf="projetModif.urgent" class="badge-urgent-inline">🔥</span>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="media" class="form-label">Média (Image ou Vidéo)</label>
+        <div class="file-input-wrapper">
+          <input
+            id="media"
+            type="file"
+            class="file-input"
+            (change)="changerMedia($event)"
+            accept="image/*,video/*"
+          >
+          <label for="media" class="file-label">
+            <span class="file-icon">📁</span>
+            <span>Choisir un fichier</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="media-preview" *ngIf="projetModif.mediaUrl">
+        <p class="preview-label">Aperçu actuel :</p>
+        <ng-container [ngSwitch]="projetModif.mediaType">
+          <img
+            *ngSwitchCase="'image'"
+            [src]="projetModif.mediaUrl"
+            alt="Aperçu"
+            (error)="onImgError($event)"
+            class="preview-img"
+          >
+          <video
+            *ngSwitchCase="'video'"
+            [src]="projetModif.mediaUrl"
+            preload="metadata"
+            controls
+            playsinline
+            class="preview-video"
+          ></video>
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button
+        class="btn btn-primary"
+        (click)="sauvegarderProjet()"
+        [disabled]="loading"
+      >
+        <span *ngIf="!loading">💾 Sauvegarder</span>
+        <span *ngIf="loading" class="spinner-small"></span>
+      </button>
+      <button class="btn btn-secondary" (click)="fermerModal()">
+        ❌ Annuler
+      </button>
+    </div>
+  </div>
+</div>

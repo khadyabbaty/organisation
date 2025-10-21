@@ -1,0 +1,137 @@
+.site-header {
+  background: #1CABE2;
+  color: #fff;
+  padding: 12px 0;
+  position: relative;
+  z-index: 1000;
+
+  .header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+    font-size: 18px;
+
+    img {
+      height: 45px;
+      border-radius: 8px;
+    }
+  }
+
+  .burger {
+    display: none;
+    font-size: 26px;
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    z-index: 1100;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: transform 0.3s ease-in-out;
+
+    a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 6px 10px;
+      border-radius: 6px;
+      transition: 0.3s;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      &.active {
+        background: #00529B;
+      }
+    }
+
+    .btn-unicef {
+      background: #00529B;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.3s;
+
+      &:hover {
+        background: #003f73;
+      }
+    }
+  }
+}
+.brand img { max-height: 40px; display: inline-block; }
+
+/* ✅ Version mobile + animation */
+@media (max-width: 768px) {
+  .burger {
+    display: block;
+  }
+
+  .nav-links {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 220px;
+    background: #1CABE2;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    transform: translateX(100%);
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .nav-links.open {
+    transform: translateX(0);
+  }
+}
+/* Backdrop sombre – utiliser RGBA (pas opacity globale) */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 999;
+}
+
+/* Boîte du modal, au-dessus du backdrop */
+.modal-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(720px, 92vw);
+  max-height: 90vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.2);
+  z-index: 1000;
+  padding: 16px;
+}
+
+/* Bouton fermer */
+.modal-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: transparent;
+  border: 0;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}

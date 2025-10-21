@@ -1,0 +1,56 @@
+.dashboard {
+  background: #f8f9fa;
+
+  .stats-container {
+    display: flex;
+    flex-wrap: nowrap; /* Empêche les cards de passer à la ligne */
+    gap: 16px;         /* Espace entre les cards */
+    overflow-x: auto;  /* Scroll horizontal si les cards dépassent la largeur */
+    padding-bottom: 10px; /* Petit padding pour le scroll */
+  }
+
+  .stat-card {
+    flex: 0 0 220px;   /* Largeur fixe pour chaque card */
+    border-radius: 12px;
+    background: #fff;
+    transition: transform 0.2s ease-in-out;
+
+    &:hover {
+      transform: translateY(-5px);
+    }
+
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #f3e5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9c27b0;
+      margin: 0 auto;
+    }
+
+    h4 {
+      color: #9c27b0;
+    }
+
+
+  }
+
+
+  /* GRAPHIQUES */
+  .card-body canvas {
+    max-height: 250px;
+    width: 100% !important;
+  }
+
+  /* TABLE PROJETS */
+  table th, table td {
+    vertical-align: middle;
+  }
+
+  .badge {
+    font-size: 0.85rem;
+  }
+}

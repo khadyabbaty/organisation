@@ -1,1 +1,89 @@
-/* You can add global styles to this file, and also import other style files */
+/* src/styles.scss */
+
+/* Palette UNICEF-like */
+:root{
+  --unicef-blue: #1CABE2;    /* bleu clair - fonds/boutons */
+  --unicef-dark: #00529B;    /* bleu foncé - actions */
+  --white: #ffffff;
+  --muted: #6c757d;
+  --card-shadow: 0 6px 18px rgba(4, 8, 24, 0.06);
+}
+
+/* Reset léger */
+*{ box-sizing: border-box; }
+body{
+  margin: 0;
+  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: #f7f9fb;
+  color: #111;
+}
+
+/* Container central */
+.main-container{
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Boutons */
+.btn-unicef{
+  background: var(--unicef-blue);
+  color: var(--white);
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.btn-unicef-outline{
+  background: transparent;
+  color: var(--unicef-dark);
+  border: 2px solid var(--unicef-blue);
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+/* Cartes et stats */
+.card {
+  background: var(--white);
+  border-radius: 10px;
+  box-shadow: var(--card-shadow);
+  padding: 18px;
+}
+.stats-row{ display:flex; gap:16px; flex-wrap:wrap; }
+.stat-card{ flex:1 1 210px; text-align:center; }
+.stat-number{ font-size:28px; font-weight:700; color:var(--unicef-dark); margin-top:8px; }
+
+/* Header/Footer */
+.site-header{
+  background: var(--white);
+  border-bottom: 1px solid #e6eef7;
+  padding: 12px 24px;
+  box-shadow: 0 2px 8px rgba(20,35,60,0.03);
+}
+.header-inner{
+  max-width:1200px; margin:0 auto;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.nav-links{ display:flex; gap:14px; align-items:center; }
+.brand{ display:flex; gap:8px; align-items:center; font-weight:700; color:var(--unicef-dark); }
+
+/* Hero */
+.hero{
+  border-radius: 12px;
+  padding: 28px;
+  color: white;
+  background: linear-gradient(135deg, var(--unicef-blue), var(--unicef-dark));
+  margin-bottom:18px;
+}
+.hero h2{ margin:0 0 8px 0; font-size:26px; }
+.hero p{ margin:0 0 14px 0; color: rgba(255,255,255,0.9); }
+
+/* Footer */
+.site-footer{
+  background: #fff;
+  border-top:1px solid #e6eef7;
+  padding:16px 24px;
+  margin-top:36px;
+  text-align:center;
+  color:var(--muted);
+}

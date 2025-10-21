@@ -1,0 +1,140 @@
+/* ----------------------------------------
+   Wrapper : titre fixe, formulaire scrollable
+----------------------------------------- */
+.projet-create-wrapper {
+  display: flex;
+  flex-direction: column;
+
+  /* Fallback desktop */
+  max-height: 90vh;
+
+  /* Mobile moderne (évite les barres d’adresse qui bougent) */
+  @supports (height: 100dvh) {
+    max-height: 90dvh;
+  }
+
+  h2 {
+    margin-bottom: 12px;
+    color: #0a4a8d;
+  }
+}
+
+/* ----------------------------------------
+   Zone qui scrolle
+----------------------------------------- */
+.projet-create-body {
+  flex: 1 1 auto;
+  min-height: 0;          /* indispensable en flex pour autoriser overflow */
+  overflow: auto;         /* scroll interne */
+  padding-right: 8px;     /* place pour la scrollbar */
+
+  /* Scrollbar fine */
+  scrollbar-width: thin;                 /* Firefox */
+  scrollbar-color: #bfbfbf transparent;  /* Firefox */
+}
+.projet-create-body::-webkit-scrollbar { width: 6px; }      /* Chrome/Edge */
+.projet-create-body::-webkit-scrollbar-track { background: transparent; }
+.projet-create-body::-webkit-scrollbar-thumb {
+  background: #bfbfbf; border-radius: 6px;
+}
+
+/* ----------------------------------------
+   Form controls
+----------------------------------------- */
+.projet-create-body label {
+  font-weight: 600;
+  margin-top: 10px;
+  display: block;
+}
+
+.projet-create-body input[type="text"],
+.projet-create-body input[type="date"],
+.projet-create-body textarea,
+.projet-create-body select,
+.projet-create-body input[type="file"] {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  font-size: 0.95rem;
+  font-family: inherit;
+  margin-top: 6px;
+  background: #fff;
+}
+
+.projet-create-body input[disabled],
+.projet-create-body textarea[disabled],
+.projet-create-body select[disabled],
+.projet-create-body button[disabled] {
+  opacity: .7;
+  cursor: not-allowed;
+}
+
+/* ----------------------------------------
+   Grille : dates + urgent
+----------------------------------------- */
+.projet-create-body .form-inline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.projet-create-body .urgent-check {
+  display: flex;
+  align-items: end;
+  padding-bottom: 4px;
+}
+
+/* ----------------------------------------
+   Aperçu média
+----------------------------------------- */
+.projet-create-body .media-preview {
+  margin-top: 10px;
+}
+.projet-create-body .media-preview img,
+.projet-create-body .media-preview video {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+/* ----------------------------------------
+   Erreurs
+----------------------------------------- */
+.form-error {
+  color: #b00020;
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+
+/* ----------------------------------------
+   Actions
+----------------------------------------- */
+.projet-create-body .actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.projet-create-body .actions button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #0a4a8d;
+  color: #fff;
+}
+
+.projet-create-body .actions .btn-secondary {
+  background: #ccc;
+  color: #333;
+}
+
+.projet-create-body .actions .btn-light {
+  background: #f1f1f1;
+  color: #333;
+}

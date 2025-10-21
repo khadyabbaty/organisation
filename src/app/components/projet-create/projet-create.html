@@ -1,0 +1,144 @@
+<div class="projet-create-wrapper">
+  <h2>Créer un nouveau projet</h2>
+
+  <!-- zone scrollable -->
+  <div class="projet-create-body">
+    <form
+      #f="ngForm"
+      (ngSubmit)="submit(f)"
+      novalidate
+      [attr.aria-busy]="submitting"
+    >
+      <!-- Titre -->
+      <label for="titre">Titre du projet <span aria-hidden="true">*</span></label>
+      <input
+        id="titre"
+        type="text"
+        name="titre"
+        [(ngModel)]="titre"
+        #titreCtrl="ngModel"
+        required
+        [disabled]="submitting"
+        autocomplete="off"
+        placeholder="Nom du projet"
+      />
+      <small class="form-error" *ngIf="titreCtrl.invalid && (titreCtrl.dirty || f.submitted)">
+        Le titre est obligatoire.
+      </small>
+
+      <!-- Description -->
+      <label for="description">Description <span aria-hidden="true">*</span></label>
+      <textarea
+        id="description"
+        name="description"
+        [(ngModel)]="description"
+        #descCtrl="ngModel"
+        rows="4"
+        required
+        [disabled]="submitting"
+        placeholder="Décrire le projet"
+      ></textarea>
+      <small class="form-error" *ngIf="descCtrl.invalid && (descCtrl.dirty || f.submitted)">
+        La description est obligatoire.
+      </small>
+
+      <!-- Dates & Urgent -->
+      <div class="form-inline">
+        <div>
+          <label for="dateDebut">Date début</label>
+          <input
+            id="dateDebut"
+            type="date"
+            name="dateDebut"
+            [(ngModel)]="dateDebut"
+            [disabled]="submitting"
+          />
+        </div>
+        <div>
+          <label for="dateFin">Date fin</label>
+          <input
+            id="dateFin"
+            type="date"
+            name="dateFin"
+            [(ngModel)]="dateFin"
+            [disabled]="submitting"
+          />
+        </div>
+        <div class="urgent-check">
+          <label for="urgent">
+            <input
+              id="urgent"
+              type="checkbox"
+              [(ngModel)]="urgent"
+              name="urgent"
+              [disabled]="submitting"
+            />
+            Urgent
+          </label>
+        </div>
+      </div>
+
+      <!-- Lieu -->
+      <label for="lieu">Lieu</label>
+      <input
+        id="lieu"
+        type="text"
+        name="lieu"
+        [(ngModel)]="lieu"
+        [disabled]="submitting"
+        placeholder="Ex: Nouakchott"
+        autocomplete="off"
+      />
+
+      <!-- Image -->
+      <label for="image">Image</label>
+      <!-- ⛔ plus de 'video/*' -->
+      <input
+        id="image"
+        type="file"
+        (change)="onFileSelected($event)"
+        accept="image/*"
+        [disabled]="submitting"
+      />
+
+      <!-- Aperçu -->
+      <div *ngIf="mediaPreview" class="media-preview">
+        <img *ngIf="isImagePreview" [src]="mediaPreview" alt="Aperçu de l’image sélectionnée" />
+      </div>
+
+      <!-- Erreur globale du formulaire -->
+      <div *ngIf="errorMessage" class="form-error" aria-live="polite">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Actions -->
+      <div class="actions">
+        <button type="submit" [disabled]="!f.valid || submitting">
+          <ng-container *ngIf="!submitting; else loadingTpl">Créer</ng-container>
+        </button>
+
+        <button
+          type="button"
+          class="btn-secondary"
+          (click)="onCancel()"
+          [disabled]="submitting"
+        >
+          Annuler
+        </button>
+
+        <button
+          type="button"
+          class="btn-light"
+          (click)="reset(f)"
+          [disabled]="submitting"
+        >
+          Réinitialiser
+        </button>
+      </div>
+
+      <ng-template #loadingTpl>
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      </ng-template>
+    </form>
+  </div>
+</div>

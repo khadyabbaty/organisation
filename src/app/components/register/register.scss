@@ -1,0 +1,315 @@
+// register.component.scss
+
+// ===== Variables (facultatif) =====
+$primary-700: #007bbd;
+$primary-500: #009fe3;
+$text-1: #1f2937;
+$muted: #6b7280;
+$surface: #ffffff;
+$bg-gradient-from: #f8fafc;
+$bg-gradient-to: #e9f1f9;
+
+// ===== Page wrapper =====
+.register-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: linear-gradient(135deg, $bg-gradient-from, $bg-gradient-to);
+  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: $text-1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  // ===== Header full width =====
+  .site-header {
+    width: 100%;
+    background: $surface;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid #e6e9ee;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 50; /* above content */
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+
+      .brand-logo {
+        height: 40px;
+        width: auto;
+        border-radius: 6px;
+        object-fit: contain;
+      }
+
+      .brand-name {
+        color: $primary-500;
+        font-weight: 700;
+        font-size: 1rem;
+      }
+    }
+
+    .page-title {
+      color: $primary-500;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      margin: 0;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+
+      a {
+        margin-left: 0.5rem;
+      }
+    }
+  }
+
+  // ===== Main area: center the card =====
+  main, .container, .main-container {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;   // vertical centering
+    justify-content: center; // horizontal centering
+    padding: 2.25rem 1rem;
+  }
+
+  // The register card (compact and centered)
+  .register-card {
+    width: 100%;
+    max-width: 460px;     // taille compacte
+    background: $surface;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 10px 30px rgba(2,6,23,0.06);
+    text-align: left;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 18px 40px rgba(2,6,23,0.08);
+    }
+
+    .card-title {
+      text-align: center;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: $primary-500;
+      margin-bottom: 0.25rem;
+    }
+
+    .card-subtitle {
+      text-align: center;
+      color: $muted;
+      margin-bottom: 1rem;
+      font-size: 0.92rem;
+    }
+
+    form {
+      margin-top: 6px;
+    }
+
+    .mb-3 {
+      margin-bottom: 1rem;
+    }
+
+    // form controls
+    .form-control {
+      width: 100%;
+      display: block;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #e6edf5;
+      background: #fff;
+      font-size: 0.95rem;
+      color: $text-1;
+      transition: box-shadow 0.18s, border-color 0.18s;
+
+      &::placeholder {
+        color: #9aa4b2;
+      }
+
+      &:focus {
+        outline: none;
+        border-color: $primary-500;
+        box-shadow: 0 0 0 6px rgba(0,159,227,0.08);
+      }
+    }
+
+    // password toggle (positioned inside input wrapper)
+    .position-relative {
+      position: relative;
+
+      .toggle-pass {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: $muted;
+        font-size: 0.85rem;
+        cursor: pointer;
+        padding: 6px;
+      }
+    }
+
+    // checkbox text
+    .form-check {
+      font-size: 0.9rem;
+      color: #4b5563;
+      margin-bottom: 0.6rem;
+    }
+
+    // primary button
+    .btn-primary {
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      background: linear-gradient(90deg, $primary-500, $primary-700);
+      box-shadow: 0 6px 18px rgba(0,123,189,0.12);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 28px rgba(0,123,189,0.14);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+
+    .form-error {
+      color: #d9534f;
+      font-size: 0.82rem;
+      margin-top: 6px;
+    }
+
+    p.small {
+      margin-top: 0.8rem;
+      text-align: center;
+      color: $muted;
+      font-size: 0.9rem;
+    }
+  }
+
+  // ===== Footer full width =====
+  .footer {
+    width: 100%;
+    background: $surface;
+    border-top: 1px solid #e6e9ee;
+    padding: 18px 12px;
+    text-align: center;
+
+    .fw-semibold {
+      font-weight: 700;
+    }
+
+    .text-muted {
+      color: $muted;
+    }
+
+    .btn {
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+
+    .social-icons {
+      margin-top: 0.6rem;
+
+      a {
+        color: $primary-500;
+        font-size: 1.15rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.12s ease, color 0.12s ease;
+
+        &:hover {
+          color: $primary-700;
+          transform: translateY(-3px);
+        }
+      }
+    }
+  } // end footer
+
+  // ===== Responsive tweaks =====
+  @media (max-width: 991.98px) {
+    .site-header {
+      padding: 0.9rem 1rem;
+    }
+
+    .register-card {
+      max-width: 420px;
+      padding: 22px;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .site-header {
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+
+      .page-title {
+        display: none;
+      }
+    }
+
+    main, .container, .main-container {
+      padding: 1.25rem;
+    }
+
+    .register-card {
+      margin: 12px;
+      border-radius: 12px;
+      padding: 18px;
+    }
+  }
+  /* bouton oeil dans l'input */
+.position-relative {
+  .toggle-pass {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 6px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .toggle-pass:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(13,110,253,0.12);
+    border-radius: 6px;
+  }
+
+  /* agrandir clic cible sur mobile */
+    @media (pointer: coarse) {
+        .toggle-pass {
+          padding: 8px;
+        }
+      }
+    }
+
+    /* icônes bootstrap (si besoin d’un ajustement) */
+    .toggle-pass .bi {
+      font-size: 1.05rem;
+    }
+
+} // end .register-page

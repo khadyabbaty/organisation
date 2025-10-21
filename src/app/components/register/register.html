@@ -1,0 +1,92 @@
+<div class="register-page d-flex flex-column min-vh-100">
+  <header class="site-header d-flex justify-content-between align-items-center px-4 py-3">
+    <div class="d-flex align-items-center">
+      <img src="assets/logo.png" alt="logoKheriyati" class="brand-logo">
+      <span class="ms-2 fw-bold brand-name">Kheriyati</span>
+    </div>
+    <h2 class="page-title d-none d-md-block">INSCRIPTION ORGANISATION</h2>
+    <div class="actions">
+      <!-- routerLink (et non href) -->
+      <a [routerLink]="['/login']" class="btn btn-sm btn-outline-primary me-2">Retour</a>
+    </div>
+  </header>
+
+  <main class="flex-fill d-flex align-items-center justify-content-center px-3 py-5">
+    <div class="register-card card p-4 rounded-4 shadow-lg">
+      <h5 class="card-title fw-bold text-primary mb-2 text-center">CRÉEZ VOTRE COMPTE</h5>
+      <p class="card-subtitle small text-muted mb-4 text-center">
+        Inscrivez votre organisation pour publier des projets et recevoir des dons.
+      </p>
+
+      <form #registerForm="ngForm" (ngSubmit)="register(registerForm)" novalidate>
+        <div class="mb-3">
+          <input name="name" [(ngModel)]="name" #nameRef="ngModel" required minlength="2"
+                 class="form-control" placeholder="Nom de l'organisation" [disabled]="isSubmitting" />
+          <div *ngIf="(registerForm.submitted || nameRef.touched) && nameRef.invalid" class="form-error">
+            Le nom est requis (min 2 caractères).
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <input name="email" [(ngModel)]="email" #emailRef="ngModel" required email
+                 class="form-control" placeholder="Adresse email" [disabled]="isSubmitting" />
+          <div *ngIf="(registerForm.submitted || emailRef.touched) && emailRef.invalid" class="form-error">
+            Merci de saisir un email valide.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <input name="telephone" [(ngModel)]="telephone" #telRef="ngModel" required
+                 class="form-control" placeholder="Téléphone" [disabled]="isSubmitting" />
+          <div *ngIf="(registerForm.submitted || telRef.touched) && telRef.invalid" class="form-error">
+            Le téléphone est requis.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <input name="location" [(ngModel)]="location" #locRef="ngModel" required
+                 class="form-control" placeholder="Localisation (ville / pays)" [disabled]="isSubmitting" />
+          <div *ngIf="(registerForm.submitted || locRef.touched) && locRef.invalid" class="form-error">
+            La localisation est requise.
+          </div>
+        </div>
+
+        <div class="mb-3 position-relative">
+          <input name="password" [(ngModel)]="password" #passRef="ngModel" required minlength="6"
+                 [type]="showPassword ? 'text' : 'password'" class="form-control"
+                 placeholder="Mot de passe" [disabled]="isSubmitting" />
+          <button type="button" class="toggle-pass" (click)="togglePassword()" aria-label="Afficher/masquer">
+            <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+          </button>
+          <div *ngIf="(registerForm.submitted || passRef.touched) && passRef.invalid" class="form-error">
+            Le mot de passe doit avoir au moins 6 caractères.
+          </div>
+        </div>
+
+        <div class="mb-3 position-relative">
+          <input name="confirmPassword" [(ngModel)]="confirmPassword" #confirmRef="ngModel" required
+                 [type]="showPassword ? 'text' : 'password'" class="form-control"
+                 placeholder="Confirmez le mot de passe" [disabled]="isSubmitting" />
+          <div *ngIf="(registerForm.submitted || confirmRef.touched) && (confirmPassword !== password)" class="form-error">
+            Les mots de passe ne correspondent pas.
+          </div>
+        </div>
+
+        <div *ngIf="errorMessage" class="alert alert-danger py-2 mb-3 small">
+          {{ errorMessage }}
+        </div>
+
+        <button class="btn btn-primary w-100 py-2" type="submit" [disabled]="isSubmitting">
+          <ng-container *ngIf="!isSubmitting; else loadingTpl">Je m'inscris</ng-container>
+        </button>
+        <ng-template #loadingTpl>
+          <span class="spinner-border spinner-border-sm me-2" role="status"></span>Traitement…
+        </ng-template>
+      </form>
+
+      <p class="text-muted small mt-3 mb-0 text-center">
+        Déjà inscrit ? <a [routerLink]="['/login']" class="text-primary">Connectez-vous ici</a>
+      </p>
+    </div>
+  </main>
+</div>

@@ -1,0 +1,43 @@
+<!-- src/app/components/header/header.html -->
+<header class="site-header shadow-sm">
+  <div class="header-inner container">
+    <div class="brand">
+      <img src="/assets/Kheriyati.png" alt="Logo" />
+      <span> Espace Organisation</span>
+    </div>
+
+    <button class="burger" type="button" (click)="toggleMenu()" aria-label="Ouvrir le menu">
+      <i class="bi bi-list"></i>
+    </button>
+
+    <nav class="nav-links" [class.open]="menuOpen" *ngIf="showPrivateNav">
+      <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">
+        <i class="bi bi-house-door"></i> Dashboard
+      </a>
+      <a routerLink="/dashboard/projets" routerLinkActive="active" (click)="closeMenu()">
+        <i class="bi bi-pin-angle"></i> Projets
+      </a>
+      <a routerLink="/dashboard/dons" routerLinkActive="active" (click)="closeMenu()">
+        <i class="bi bi-cash-stack"></i> Dons
+      </a>
+      <a routerLink="/dashboard/profil" routerLinkActive="active" (click)="closeMenu()">
+        <i class="bi bi-person-circle"></i> Profil
+      </a>
+
+      <button class="btn-unicef" type="button" (click)="createProjet()" [disabled]="submitting">
+        <i class="bi bi-plus-circle"></i> Créer un projet
+      </button>
+    </nav>
+  </div>
+</header>
+
+<!-- Modal -->
+<div class="modal-backdrop" *ngIf="modalOpen" (click)="closeModal()"></div>
+<div class="modal-box" *ngIf="modalOpen" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+  <button class="modal-close" type="button" (click)="closeModal()" aria-label="Fermer">×</button>
+  <app-projet-create
+    [submitting]="submitting"
+    (projetCree)="handleProjetCree($event)"
+    (cancel)="closeModal()">
+  </app-projet-create>
+</div>

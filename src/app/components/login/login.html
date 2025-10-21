@@ -1,0 +1,80 @@
+<div class="login-page d-flex flex-column min-vh-100">
+
+  <!-- HEADER -->
+  <header class="site-header bg-white shadow-sm py-3 px-4 d-flex justify-content-between align-items-center w-100">
+    <div class="d-flex align-items-center">
+      <img src="assets/logo.png" alt="logoKheriyati" style="height:40px; border-radius:6px;">
+      <span class="ms-2 fw-bold text-primary fs-5">Kheriyati</span>
+    </div>
+    <h2 class="text-primary m-0 d-none d-md-block">ESPACE ORGANISATION</h2>
+    <div>
+      <a routerLink="/register" class="btn btn-sm btn-danger">Register</a>
+    </div>
+  </header>
+
+  <!-- BODY -->
+  <main class="flex-fill d-flex justify-content-center align-items-center py-5">
+    <div class="card p-4 shadow-lg border-0 rounded-4" style="max-width: 420px; width: 100%;">
+      <h5 class="fw-bold text-primary mb-3 text-center">VOUS AVEZ DÉJÀ UN COMPTE</h5>
+      <p class="small text-muted mb-4 text-center">
+        Bienvenue sur votre espace Organisation.<br>
+        Suivez vos dons, téléchargez vos reçus fiscaux, gérez vos informations…
+      </p>
+
+      <form (ngSubmit)="login()" novalidate>
+        <input
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="Votre email"
+          class="form-control mb-3"
+          required
+          [disabled]="submitting"
+          autocomplete="username" />
+
+        <input
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="Votre mot de passe"
+          class="form-control mb-3"
+          required
+          [disabled]="submitting"
+          autocomplete="current-password" />
+
+        <div *ngIf="errorMessage" class="alert alert-danger py-2 small">
+          {{ errorMessage }}
+        </div>
+
+        <button class="btn btn-primary w-100" type="submit" [disabled]="!canSubmit">
+          <span *ngIf="!submitting">Je me connecte</span>
+          <span *ngIf="submitting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          <span class="visually-hidden" *ngIf="submitting">Connexion…</span>
+        </button>
+      </form>
+
+      <a href="#" class="text-decoration-none small d-block text-end mb-3 text-primary">
+        Mot de passe oublié ?
+      </a>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer bg-light text-center py-4 border-top w-100">
+    <p class="fw-semibold mb-1">Vous avez une question ?</p>
+    <p class="text-muted small mb-3">
+      Notre service est disponible pour vous accompagner du lundi au vendredi, de 9h30 à 18h30
+    </p>
+    <div class="d-flex justify-content-center gap-3 mb-3">
+      <a href="#" class="btn btn-outline-primary rounded-3 btn-sm">📧 Nous contacter</a>
+      <a href="tel:0996368468" class="btn btn-outline-primary rounded-3 btn-sm">📞 0996 368 468</a>
+    </div>
+    <div class="social-icons d-flex justify-content-center gap-4">
+      <a href="#"><i class="bi bi-facebook fs-5"></i></a>
+      <a href="#"><i class="bi bi-twitter fs-5"></i></a>
+      <a href="#"><i class="bi bi-linkedin fs-5"></i></a>
+      <a href="#"><i class="bi bi-youtube fs-5"></i></a>
+    </div>
+  </footer>
+
+</div>
