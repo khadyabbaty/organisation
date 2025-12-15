@@ -10,19 +10,6 @@
   --accent-2: #22d3ee;
   --danger: #ef4444;
   --shadow: 0 10px 30px rgba(0,0,0,.35);
-
-  @media (prefers-color-scheme: light) {
-    --bg: #f6f7fb;
-    --card: #ffffff;
-    --muted: #5b6b7b;
-    --text: #0f1722;
-    --line: rgba(15,23,34,.08);
-    --accent: #2266ff;
-    --accent-2: #00c2ff;
-    --danger: #e53935;
-    --shadow: 0 12px 26px rgba(16,24,40,.12);
-  }
-
   background: radial-gradient(1200px 600px at 10% -10%, rgba(79,140,255,.15), transparent),
               radial-gradient(1000px 500px at 110% 0%, rgba(34,211,238,.12), transparent),
               var(--bg);
@@ -30,6 +17,20 @@
   border-radius: 16px;
   padding: clamp(16px, 3vw, 28px);
   box-shadow: inset 0 0 0 1px var(--line);
+
+  & {
+    @media (prefers-color-scheme: light) {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --muted: #5b6b7b;
+      --text: #0f1722;
+      --line: rgba(15,23,34,.08);
+      --accent: #2266ff;
+      --accent-2: #00c2ff;
+      --danger: #e53935;
+      --shadow: 0 12px 26px rgba(16,24,40,.12);
+    }
+  }
 }
 
 /* ========== Titre ========== */
@@ -45,7 +46,9 @@
 }
 
 /* ========== États ========== */
-.text-muted { color: var(--muted); }
+.text-muted {
+  color: var(--muted);
+}
 
 .alert {
   padding: 12px 14px;
@@ -54,6 +57,7 @@
   background: color-mix(in srgb, var(--card) 85%, #ffecd2 15%);
   color: var(--text);
   box-shadow: var(--shadow);
+
   &.alert-danger {
     background: color-mix(in srgb, var(--card) 80%, var(--danger) 20%);
     border-color: color-mix(in srgb, var(--danger) 50%, var(--line));
@@ -138,7 +142,13 @@
   text-decoration: none;
   border-bottom: 1px dashed color-mix(in srgb, var(--accent) 50%, transparent);
   transition: .2s ease;
-  &:hover { filter: brightness(1.08); }
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+
+  &:hover {
+    filter: brightness(1.08);
+  }
 }
 
 /* ========== Bouton ========== */
@@ -161,9 +171,20 @@
   box-shadow: var(--btn-shadow);
   transition: transform .12s ease, box-shadow .2s ease, filter .2s ease;
 
-  &:hover { transform: translateY(-1px); filter: saturate(1.05); }
-  &:active { transform: translateY(0); box-shadow: 0 6px 14px rgba(0,0,0,.25); }
-  &:disabled { opacity: .6; cursor: not-allowed; }
+  &:hover {
+    transform: translateY(-1px);
+    filter: saturate(1.05);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 14px rgba(0,0,0,.25);
+  }
+
+  &:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+  }
 
   &.btn-danger {
     --btn-bg: linear-gradient(90deg, #ef4444, #f97316);
@@ -172,8 +193,14 @@
 }
 
 /* ========== Utilities douces (si Bootstrap non chargé) ========== */
-.container { max-width: 980px; margin-inline: auto; }
-.mt-4 { margin-top: 1.25rem; }
+.container {
+  max-width: 980px;
+  margin-inline: auto;
+}
+
+.mt-4 {
+  margin-top: 1.25rem;
+}
 
 /* ========== Loader petit (optionnel) ========== */
 @keyframes dot {
@@ -181,6 +208,7 @@
   50% { opacity: 1; transform: translateY(-2px); }
   100% { opacity: 0.2; transform: translateY(0); }
 }
+
 .text-muted::after {
   content: " •••";
   display: inline-block;

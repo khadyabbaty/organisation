@@ -3,19 +3,9 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-// ✅ dans register.ts, login.ts, etc.
 import { throwError } from 'rxjs';
 import { finalize, switchMap, take, catchError } from 'rxjs/operators';
-import { AuthService } from '../../services/auth';
-
-interface RegisterPayload {
-  username: string;
-  password: string;
-  email: string;
-  adresse: string;
-  telephone: string;
-  profil: 'ORGANISATION' | 'ADMIN' | 'DONATEUR' | string;
-}
+import { AuthService, InscriptionPayload, ConnexionPayload } from '../../services/auth';
 
 @Component({
   selector: 'app-register',
@@ -52,48 +42,64 @@ export class Register {
   }
 
   register(form: NgForm) {
-    this.errorMessage = '';
-    if (this.isSubmitting) return;
+  this.errorMessage = '';
+  if (this.isSubmitting) return;
 
-    if (!form.valid) {
-      this.errorMessage = 'Merci de remplir correctement le formulaire.';
-      form.form.markAllAsTouched();
-      return;
-    }
-    if (this.password !== this.confirmPassword) {
-      this.errorMessage = 'Les mots de passe ne correspondent pas.';
-      return;
-    }
-
-    this.isSubmitting = true;
-
-    const email = this.email.trim();
-    const payload: RegisterPayload = {
-      username:  email,                 // identifiant côté back
-      password:  this.password,
-      email:     email,
-      adresse:   this.location.trim(),  // champ attendu par le back
-      telephone: this.telephone.trim(),
-      profil:    'ORGANISATION'
-    };
-
-    this.auth.register(payload).pipe(
-      take(1),
-      // enchaîner un login auto si inscription OK
-      switchMap(() =>
-        this.auth.login({ username: email, password: this.password }).pipe(take(1))
-      ),
-      catchError((err) => {
-        this.errorMessage = this.toMsg(err);
-        return throwError(() => err);
-      }),
-      finalize(() => (this.isSubmitting = false))
-    )
-    .subscribe({
-      next: () => this.router.navigate(['/login'], { replaceUrl: true }),
-      error: () => {
-        // déjà géré dans catchError -> this.errorMessage
-      }
-    });
+  if (!form.valid) {
+    this.errorMessage = 'Merci de remplir correctement le formulaire.';
+    form.form.markAllAsTouched();
+    return;
   }
+  if (this.password !== this.confirmPassword) {
+    this.errorMessage = 'Les mots de passe ne correspondent pas.';
+    return;
+  }
+
+  this.isSubmitting = true;
+
+  const email = this.email.trim();
+
+  // ✅ CRÉER LE PAYLOAD AVEC LE NOM DE L'ORGANISATION
+  const payload: InscriptionPayload = {
+    username: email,
+    password: this.password,
+    email: email,
+    adresse: this.location.trim(),
+    telephone: this.telephone.trim(),
+    profil: 'ORGANISATION',
+    organisationNom: this.name.trim()  // ✅ Envoyer le nom fourni par l'utilisateur
+  };
+
+  console.log('[Register] 📝 Inscription avec organisation:', {
+    username: email,
+    organisationNom: this.name.trim()
+  });
+
+  this.auth.inscrire(payload).pipe(
+    take(1),
+    switchMap(() => {
+      console.log('[Register] ✅ Inscription réussie, connexion automatique...');
+      const connexionPayload: ConnexionPayload = {
+        username: email,
+        password: this.password
+      };
+      return this.auth.connexion(connexionPayload).pipe(take(1));
+    }),
+    catchError((err) => {
+      this.errorMessage = this.toMsg(err);
+      console.error('[Register] ❌ Erreur:', err);
+      return throwError(() => err);
+    }),
+    finalize(() => (this.isSubmitting = false))
+  )
+  .subscribe({
+    next: () => {
+      console.log('[Register] 🎉 Redirection vers dashboard');
+      this.router.navigate(['/dashboard'], { replaceUrl: true });
+    },
+    error: () => {
+      // Erreur déjà gérée dans catchError
+    }
+  });
+}
 }

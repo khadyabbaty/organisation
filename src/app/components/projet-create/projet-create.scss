@@ -138,3 +138,514 @@
   background: #f1f1f1;
   color: #333;
 }
+/* ================= GPS BUTTON ================= */
+.gps-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0;
+}
+
+.btn-gps {
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.btn-gps:hover {
+  transform: scale(1.05);
+}
+
+.gps-help {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+/* ================= MAP ================= */
+.map-box {
+  height: 300px;
+  width: 100%;
+  border-radius: 14px;
+  border: 2px solid #0a4a8d;
+  margin-bottom: 10px;
+}
+
+.coords {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0a4a8d;
+}
+.gps-map-container {
+  position: relative;
+}
+
+/* CARET CENTRÉE */
+.map-center-caret {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  z-index: 999;
+  pointer-events: none;
+  animation: caretFloat 1.6s infinite ease-in-out;
+}
+.map-center-caret i {
+  font-size: 32px;
+  color: #2563eb;
+  text-shadow: 0 6px 16px rgba(0,0,0,0.35);
+}
+@keyframes caretFloat {
+  0% { transform: translate(-50%, -100%) }
+  50% { transform: translate(-50%, -120%) }
+  100% { transform: translate(-50%, -100%) }
+}
+
+/* Bouton “Me localiser” */
+.locate-me-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: #0072ff;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 999;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  transition: transform 0.2s;
+}
+.locate-me-btn:hover {
+  transform: scale(1.1);
+}
+
+/* ----------------------------------------
+   Wrapper : titre fixe, formulaire scrollable
+----------------------------------------- */
+.projet-create-wrapper {
+  display: flex;
+  flex-direction: column;
+
+  /* Fallback desktop */
+  max-height: 90vh;
+
+  /* Mobile moderne (évite les barres d'adresse qui bougent) */
+  @supports (height: 100dvh) {
+    max-height: 90dvh;
+  }
+
+  h2 {
+    margin-bottom: 12px;
+    color: #0a4a8d;
+  }
+}
+
+/* ----------------------------------------
+   Zone qui scrolle
+----------------------------------------- */
+.projet-create-body {
+  flex: 1 1 auto;
+  min-height: 0;          /* indispensable en flex pour autoriser overflow */
+  overflow: auto;         /* scroll interne */
+  padding-right: 8px;     /* place pour la scrollbar */
+
+  /* Scrollbar fine */
+  scrollbar-width: thin;                 /* Firefox */
+  scrollbar-color: #bfbfbf transparent;  /* Firefox */
+}
+
+.projet-create-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.projet-create-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.projet-create-body::-webkit-scrollbar-thumb {
+  background: #bfbfbf;
+  border-radius: 6px;
+}
+
+/* ----------------------------------------
+   Form controls
+----------------------------------------- */
+.projet-create-body label {
+  font-weight: 600;
+  margin-top: 10px;
+  display: block;
+}
+
+.projet-create-body input[type="text"],
+.projet-create-body input[type="date"],
+.projet-create-body textarea,
+.projet-create-body select,
+.projet-create-body input[type="file"] {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  font-size: 0.95rem;
+  font-family: inherit;
+  margin-top: 6px;
+  background: #fff;
+}
+
+.projet-create-body input[disabled],
+.projet-create-body textarea[disabled],
+.projet-create-body select[disabled],
+.projet-create-body button[disabled] {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ----------------------------------------
+   Grille : dates + urgent
+----------------------------------------- */
+.projet-create-body .form-inline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.projet-create-body .urgent-check {
+  display: flex;
+  align-items: end;
+  padding-bottom: 4px;
+}
+
+/* ----------------------------------------
+   Aperçu média
+----------------------------------------- */
+.projet-create-body .media-preview {
+  margin-top: 10px;
+}
+
+.projet-create-body .media-preview img,
+.projet-create-body .media-preview video {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+/* ----------------------------------------
+   Erreurs
+----------------------------------------- */
+.form-error {
+  color: #b00020;
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+
+/* ----------------------------------------
+   Actions
+----------------------------------------- */
+.projet-create-body .actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  margin-bottom: 20px;
+}
+
+.projet-create-body .actions button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #0a4a8d;
+  color: #fff;
+}
+
+.projet-create-body .actions .btn-secondary {
+  background: #ccc;
+  color: #333;
+}
+
+.projet-create-body .actions .btn-light {
+  background: #f1f1f1;
+  color: #333;
+}
+
+/* ================= GPS BUTTON ================= */
+.gps-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0;
+}
+
+.btn-gps {
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.btn-gps:hover {
+  transform: scale(1.05);
+}
+
+.gps-help {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+/* ================= COORDS DISPLAY ================= */
+.coords {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0a4a8d;
+  margin: 12px 0;
+  padding: 10px;
+  background: #f0f4f8;
+  border-radius: 8px;
+  border-left: 4px solid #0072ff;
+}
+
+/* ================= GPS MODAL ================= */
+.gps-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 16px;
+}
+
+.gps-modal-content {
+  background: white;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 600px;
+  max-height: 85vh;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* Header du modal */
+.gps-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.gps-header-info h2 {
+  margin: 0 0 6px 0;
+  font-size: 1.2rem;
+  color: #0a4a8d;
+}
+
+.gps-instruction {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.gps-close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gps-close-btn:hover {
+  color: #000;
+}
+
+/* Map Container - IMPORTANT ! */
+.gps-map-container {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  margin: 12px;
+}
+
+/* La carte Leaflet - DOIT avoir une hauteur ! */
+.gps-map {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  border-radius: 8px;
+  z-index: 1;
+}
+
+/* CARET CENTRÉE - FLOATING ANIMATION */
+.map-center-caret {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  z-index: 999;
+  pointer-events: none;
+  animation: caretFloat 1.6s infinite ease-in-out;
+}
+
+.map-center-caret i {
+  font-size: 32px;
+  color: #2563eb;
+  text-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+@keyframes caretFloat {
+  0% {
+    transform: translate(-50%, -100%);
+  }
+  50% {
+    transform: translate(-50%, -120%);
+  }
+  100% {
+    transform: translate(-50%, -100%);
+  }
+}
+
+/* Bouton "Me localiser" */
+.locate-me-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: #0072ff;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.locate-me-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Position display card */
+.map-position-display {
+  position: absolute;
+  bottom: 70px;
+  left: 12px;
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 998;
+  max-width: 200px;
+}
+
+.position-card h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+  color: #0a4a8d;
+}
+
+.position-coords {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: #333;
+}
+
+.position-coords span {
+  font-family: monospace;
+}
+
+/* Footer du modal */
+.gps-modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-top: 1px solid #e0e0e0;
+  justify-content: flex-end;
+}
+
+.gps-action-btn {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gps-action-btn.btn-cancel {
+  background: #f1f1f1;
+  color: #333;
+}
+
+.gps-action-btn.btn-cancel:hover {
+  background: #e0e0e0;
+}
+
+.gps-action-btn.btn-validate {
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  color: white;
+}
+
+.gps-action-btn.btn-validate:hover:not([disabled]) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 114, 255, 0.4);
+}
+
+.gps-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 600px) {
+  .gps-modal-content {
+    max-width: 100%;
+    max-height: 90vh;
+  }
+
+  .gps-modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .gps-action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .map-center-caret i {
+    font-size: 28px;
+  }
+}

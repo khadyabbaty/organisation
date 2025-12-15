@@ -79,16 +79,80 @@
       </div>
 
       <!-- Lieu -->
-      <label for="lieu">Lieu</label>
-      <input
-        id="lieu"
-        type="text"
-        name="lieu"
-        [(ngModel)]="lieu"
-        [disabled]="submitting"
-        placeholder="Ex: Nouakchott"
-        autocomplete="off"
-      />
+      <label>Localisation du projet</label>
+
+      <div class="gps-actions">
+        <button type="button" class="btn-gps" (click)="ouvrirMapSelector()" [disabled]="submitting">
+          📍 Choisir sur la carte
+        </button>
+        <span class="gps-help">ou utilisez votre position actuelle</span>
+      </div>
+
+      <!-- Modal GPS intégré -->
+      <div class="gps-modal-overlay" *ngIf="showMapSelector" (click)="fermerCarteSelection()">
+        <div class="gps-modal-content" (click)="$event.stopPropagation()">
+
+          <!-- Header -->
+          <div class="gps-modal-header">
+            <div class="gps-header-info">
+              <h2><i class="bi bi-pin-map-fill"></i> Sélectionner la position</h2>
+              <p class="gps-instruction">Déplacez la carte pour définir la position du projet</p>
+            </div>
+            <button class="gps-close-btn" (click)="fermerCarteSelection()" type="button">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+
+          <!-- Map Container -->
+          <div class="gps-map-container">
+            <div id="mapSelector" class="gps-map"></div>
+
+            <!-- CARET CENTRÉE -->
+            <div class="map-center-caret">
+              <i class="bi bi-cursor-fill"></i>
+            </div>
+
+            <!-- Bouton “Me localiser” -->
+            <button class="locate-me-btn" (click)="centrerSurMaPosition()" title="Me localiser">
+              <i class="bi bi-crosshair"></i>
+            </button>
+          </div>
+
+          <!-- Position actuelle affichée -->
+          <div class="map-position-display" *ngIf="tempLatitude && tempLongitude">
+            <div class="position-card">
+              <h4><i class="bi bi-cursor-fill"></i> Position sélectionnée</h4>
+              <div class="position-coords">
+                <span><strong>Lat:</strong> {{ tempLatitude | number:'1.6-6' }}</span>
+                <span><strong>Long:</strong> {{ tempLongitude | number:'1.6-6' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions Footer -->
+          <div class="gps-modal-footer">
+            <button class="gps-action-btn btn-cancel" (click)="fermerCarteSelection()">
+              <i class="bi bi-x-circle-fill"></i> Annuler
+            </button>
+            <button class="gps-action-btn btn-validate" (click)="validerPosition()"
+              [disabled]="!tempLatitude || !tempLongitude">
+              <i class="bi bi-check-circle-fill"></i> Valider la position
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Affichage des coordonnées choisies -->
+      <p class="coords" *ngIf="latitude && longitude">
+        ✅ Latitude : {{ latitude }} <br />
+        ✅ Longitude : {{ longitude }}
+      </p>
+
+
+
+
+
 
       <!-- Image -->
       <label for="image">Image</label>
@@ -102,9 +166,9 @@
       />
 
       <!-- Aperçu -->
-      <div *ngIf="mediaPreview" class="media-preview">
+      <!-- <div *ngIf="mediaPreview" class="media-preview">
         <img *ngIf="isImagePreview" [src]="mediaPreview" alt="Aperçu de l’image sélectionnée" />
-      </div>
+      </div> -->
 
       <!-- Erreur globale du formulaire -->
       <div *ngIf="errorMessage" class="form-error" aria-live="polite">

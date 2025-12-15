@@ -1,36 +1,254 @@
-<!-- dons.html -->
- <div class="container my-2" *ngIf="loading || error">
-  <div *ngIf="loading" class="alert alert-info py-2">
-    <span class="spinner-border spinner-border-sm me-2"></span>
-    Chargement des projets…
+<!-- src/app/components/dons/dons.html -->
+<div class="dons-container">
+  <!-- Hero Header -->
+  <div class="hero-header">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1 class="hero-title">
+          <span class="gradient-text">Suivi des Dons</span>
+        </h1>
+        <p class="hero-subtitle">Suivez l'impact de vos contributions en temps réel</p>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-pill">
+          <i class="bi bi-graph-up-arrow"></i>
+          <span>{{ projets.length }} projets actifs</span>
+        </div>
+      </div>
+    </div>
   </div>
-  <div *ngIf="error" class="alert alert-danger py-2">{{ error }}</div>
-</div>
 
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="mb-0">Statistiques des dons</h5>
+  <!-- Search & Filter Bar -->
+  <div class="search-section">
+    <div class="search-wrapper">
+      <i class="bi bi-search search-icon"></i>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Rechercher un projet par nom, organisation..."
+        [(ngModel)]="search"
+      />
+      <button class="search-clear" *ngIf="search" (click)="search = ''">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </div>
 
-    <button class="btn btn-sm btn-outline-primary" (click)="fetchStats()" [disabled]="loading">
-      <span *ngIf="!loading"><i class="bi bi-arrow-clockwise"></i> Actualiser</span>
-      <span *ngIf="loading" class="d-inline-flex align-items-center">
-        <span class="spinner-border spinner-border-sm me-2"></span> Chargement...
-      </span>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p class="loading-text">Chargement des projets...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-state">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="chargerProjets()">
+      <i class="bi bi-arrow-clockwise me-2"></i>
+      Réessayer
     </button>
   </div>
 
-  <div *ngIf="error" class="alert alert-danger py-2">{{ error }}</div>
+  <!-- Projects Grid -->
+  <div class="projects-grid" *ngIf="!loading && !error">
+    <div
+      class="project-card"
+      *ngFor="let projet of filtered; trackBy: trackById"
+      (click)="selectProjet(projet)"
+    >
+      <!-- Card Media -->
+      <div class="card-media-wrapper">
+        <img
+          *ngIf="projet.mediaType === 'image'"
+          [src]="mediaSrc(projet)"
+          [alt]="projet.titre"
+          class="card-media"
+          (error)="onImgError($event)"
+        />
+        <video
+          *ngIf="projet.mediaType === 'video'"
+          [src]="projet.mediaUrl"
+          class="card-media"
+          muted
+          loop
+          playsinline
+        ></video>
 
-  <div class="row g-3">
-    <div class="col-12 col-sm-6 col-lg-3" *ngFor="let carte of cartes">
-      <div class="card text-white h-100 bg-{{ carte.color }}">
-        <div class="card-body d-flex flex-column justify-content-center align-items-center position-relative">
-          <i class="bi {{ carte.icon }} fs-2 mb-2"></i>
-          <h6 class="card-title mb-1">{{ carte.label }}</h6>
+        <!-- Overlay Gradient -->
+        <div class="media-overlay"></div>
 
-          <div class="d-flex align-items-baseline gap-2">
-            <h2 class="fw-bold mb-0">{{ donsAffichage[carte.type] }}</h2>
-            <span class="badge bg-light text-dark" *ngIf="plusBadge[carte.type]">+{{ plusBadge[carte.type] }}</span>
+        <!-- Badges -->
+        <div class="card-badges">
+          <span class="badge badge-urgent" *ngIf="projet.urgent">
+            <i class="bi bi-lightning-fill"></i>
+            Urgent
+          </span>
+          <span
+            class="badge"
+            [class.badge-active]="projet.statut === 'EN_COURS'"
+            [class.badge-completed]="projet.statut === 'TERMINE'"
+          >
+            <i class="bi" [class.bi-clock-fill]="projet.statut === 'EN_COURS'" [class.bi-check-circle-fill]="projet.statut === 'TERMINE'"></i>
+            {{ projet.statut === 'EN_COURS' ? 'En cours' : 'Terminé' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Card Content -->
+      <div class="card-content">
+        <!-- Title & Description -->
+        <div class="card-header-info">
+          <h3 class="card-title">{{ projet.titre }}</h3>
+          <p class="card-description">
+            {{ projet.description || 'Aucune description disponible' }}
+          </p>
+        </div>
+
+        <!-- Organization -->
+        <div class="organization-tag">
+          <i class="bi bi-building"></i>
+          <span>{{ projet.organisationNom }}</span>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-section">
+          <div class="progress-header">
+            <span class="progress-label">Progression</span>
+            <span class="progress-percentage">{{ getPourcentage(projet.id) }}%</span>
+          </div>
+
+          <div class="progress-bar-wrapper">
+            <div
+              class="progress-bar-fill"
+              [style.width.%]="getPourcentage(projet.id)"
+            >
+              <div class="progress-shimmer"></div>
+            </div>
+          </div>
+
+          <div class="progress-amounts">
+            <div class="amount-item">
+              <i class="bi bi-cash-coin"></i>
+              <span>{{ formatMontant(getMontantRecolte(projet.id)) }}</span>
+            </div>
+            <div class="amount-item">
+              <i class="bi bi-bullseye"></i>
+              <span>{{ formatMontant(getObjectif(projet.id)) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Donors Count -->
+        <div class="donors-info">
+          <div class="donors-avatars">
+            <div class="avatar-circle">👥</div>
+          </div>
+          <span class="donors-count">{{ getNombreDonateurs(projet.id) }} donateur(s)</span>
+        </div>
+
+        <!-- Action Button -->
+        <button class="btn-details">
+          <span>Voir les détails</span>
+          <i class="bi bi-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="filtered.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="bi bi-inbox"></i>
+      </div>
+      <h3>Aucun projet trouvé</h3>
+      <p>Essayez de modifier votre recherche</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Détails -->
+<div class="modal-backdrop" *ngIf="selectedProjet" (click)="closeModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header-custom">
+      <div class="modal-title-section">
+        <h2 class="modal-title">{{ selectedProjet.titre }}</h2>
+        <p class="modal-subtitle">{{ selectedProjet.description || 'Aucune description' }}</p>
+      </div>
+      <button class="btn-close-modal" (click)="closeModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body-custom">
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card stat-success">
+          <div class="stat-icon">
+            <i class="bi bi-cash-stack"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Montant récolté</span>
+            <span class="stat-value">{{ formatMontant(selectedProjet.montantRecolte || 0) }}</span>
+          </div>
+        </div>
+
+        <div class="stat-card stat-primary">
+          <div class="stat-icon">
+            <i class="bi bi-bullseye"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Objectif</span>
+            <span class="stat-value">{{ formatMontant(selectedProjet.objectifFinancier || 0) }}</span>
+          </div>
+        </div>
+
+        <div class="stat-card stat-info">
+          <div class="stat-icon">
+            <i class="bi bi-people-fill"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Donateurs</span>
+            <span class="stat-value">{{ selectedProjet.nombreDonateurs || 0 }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Donors List Section -->
+      <div class="donors-section">
+        <div class="section-header">
+          <h3 class="section-title">
+            <i class="bi bi-heart-fill me-2"></i>
+            Liste des donateurs
+          </h3>
+        </div>
+
+        <!-- Empty Donors State -->
+        <div *ngIf="!selectedProjet.donateurs || selectedProjet.donateurs.length === 0" class="empty-donors">
+          <div class="empty-donors-icon">
+            <i class="bi bi-heart"></i>
+          </div>
+          <p>Aucun donateur pour ce projet</p>
+          <small>Soyez le premier à contribuer!</small>
+        </div>
+
+        <!-- Donors List -->
+        <div class="donors-list" *ngIf="selectedProjet.donateurs && selectedProjet.donateurs.length > 0">
+          <div class="donor-item" *ngFor="let don of selectedProjet.donateurs">
+            <div class="donor-icon">
+              <i [class]="'bi ' + getTypeDonIcon(don.typeDon)"></i>
+            </div>
+            <div class="donor-info">
+              <div class="donor-name">{{ don.nom }}</div>
+              <div class="donor-details">{{ don.details }}</div>
+            </div>
+            <div class="donor-meta">
+              <span class="donor-badge" [ngClass]="getBadgeClass(don.typeDon)">
+                {{ don.typeDon }}
+              </span>
+              <span class="donor-date">{{ don.date | date:'dd/MM/yyyy' }}</span>
+            </div>
           </div>
         </div>
       </div>

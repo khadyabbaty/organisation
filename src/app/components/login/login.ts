@@ -1,49 +1,79 @@
-// src/app/components/login/login.ts
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
-import { HttpErrorResponse } from '@angular/common/http';
-import { finalize } from 'rxjs/operators';
+import { FormsModule, NgForm } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth';
-
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })
 export class Login {
-  // ✅ injection sans constructeur
-  private readonly router = inject(Router);
-  private readonly auth   = inject(AuthService);
-
   email = '';
   password = '';
+  showPassword = false;
+  isSubmitting = false;
   errorMessage = '';
-  submitting = false;
 
-  get canSubmit(): boolean {
-    return !!this.email && !!this.password && !this.submitting;
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {
+    console.log('[Login] 🚀 Composant initialisé');
   }
 
-  login(): void {
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  login(form: NgForm): void {
+    console.log('[Login] 📝 Tentative de connexion');
+
     this.errorMessage = '';
-    if (!this.canSubmit) return;
 
-    this.submitting = true;
+    if (this.isSubmitting) return;
 
-    this.auth.login({ username: this.email, password: this.password })
-      .pipe(finalize(() => (this.submitting = false)))
-      .subscribe({
-        next: () => this.router.navigate(['/dashboard']),
-        error: (err: HttpErrorResponse) => {
-          this.errorMessage =
-            (err.error && (err.error.message || err.error.error || err.error)) ||
-            err.message || 'Identifiants invalides';
+    if (!form.valid || !this.email || !this.password) {
+      this.errorMessage = 'Email et mot de passe requis';
+      return;
+    }
+
+    this.isSubmitting = true;
+    console.log('[Login] 🔐 Connexion pour:', this.email);
+
+    this.authService.connexion({
+      username: this.email.trim(),
+      password: this.password
+    }).subscribe({
+      next: (response) => {
+        console.log('[Login] ✅ Connexion réussie');
+        console.log('[Login] 📥 Réponse:', response);
+
+        // 🔍 DEBUG: Vérifier si le token a été sauvegardé
+        const token = localStorage.getItem('access_token');
+        console.log('[Login] 🔑 Token en localStorage:', !!token);
+        if (token) {
+          console.log('[Login] 🔑 Token (50 premiers chars):', token.substring(0, 50) + '...');
+        } else {
+          console.error('[Login] ❌ TOKEN NON TROUVÉ DANS LOCALSTORAGE !');
         }
-      });
+
+        this.isSubmitting = false;
+
+        // Attendre un peu avant de naviguer
+        setTimeout(() => {
+          console.log('[Login] 🚀 Navigation vers /dashboard');
+          this.router.navigate(['/dashboard'], { replaceUrl: true });
+        }, 500);
+      },
+      error: (err) => {
+        console.error('[Login] ❌ Erreur:', err);
+        this.errorMessage = err?.error?.error || err?.message || 'Erreur de connexion';
+        this.isSubmitting = false;
+      }
+    });
   }
 }

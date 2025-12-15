@@ -1,5 +1,6 @@
 <div class="projects-page">
-  <!-- Header with Search & Filter -->
+
+  <!-- Header -->
   <div class="page-header">
     <h1 class="page-title">Mes Projets</h1>
 
@@ -22,219 +23,373 @@
     </div>
   </div>
 
-  <!-- Loading State -->
-  <div *ngIf="loading" class="loading-state">
-    <div class="spinner-large"></div>
+  <!-- Loading -->
+  <div *ngIf="loading && projets.length === 0" class="loading-state">
     <p>Chargement des projets...</p>
   </div>
 
-  <!-- Error State -->
-  <div *ngIf="error && !loading" class="error-state">
-    <span class="error-icon">⚠️</span>
+  <!-- Error -->
+  <div *ngIf="error && !loading && projets.length === 0" class="error-state">
     <p>{{ error }}</p>
-    <button class="btn-retry" (click)="chargerProjets()">Réessayer</button>
+    <button (click)="chargerProjets()">Réessayer</button>
   </div>
 
-  <!-- Empty State -->
+  <!-- Empty -->
   <div *ngIf="!loading && !error && filtered.length === 0" class="empty-state">
-    <div class="empty-icon">📋</div>
     <h3>Aucun projet trouvé</h3>
-    <p>{{ search ? 'Aucun projet ne correspond à votre recherche.' : 'Commencez par créer votre premier projet.' }}</p>
   </div>
 
-  <!-- Projects Grid -->
+  <!-- Grid -->
   <div class="projects-grid" *ngIf="!loading && !error && filtered.length">
+
     <div class="project-card" *ngFor="let p of filtered; trackBy: trackById">
 
-      <!-- Media Section -->
+      <!-- Media -->
       <div class="project-media">
-        <ng-container [ngSwitch]="p.mediaType">
-          <img
-            *ngSwitchCase="'image'"
-            [src]="mediaSrc(p)"
-            (error)="onImgError($event)"
-            alt="Illustration du projet"
-            class="media-img"
-          >
-
-          <video
-            *ngSwitchCase="'video'"
-            [src]="mediaSrc(p)"
-            preload="metadata"
-            controls
-            playsinline
-            class="media-video"
-          ></video>
-
-          <img
-            *ngSwitchDefault
-            [src]="mediaSrc(p)"
-            (error)="onImgError($event)"
-            alt="Illustration du projet"
-            class="media-img"
-          >
-        </ng-container>
-
-        <div class="media-overlay">
-          <span *ngIf="p.urgent" class="badge-urgent">🔥 URGENT</span>
-        </div>
+        <img
+          [src]="mediaSrc(p)"
+          (error)="onImgError($event)"
+          class="media-img"
+          [alt]="p.titre"
+        >
       </div>
 
-      <!-- Card Body -->
+      <!-- Body -->
       <div class="project-body">
+
         <div class="project-header">
           <h3 class="project-title">{{ p.titre }}</h3>
-          <span
-            class="status-badge"
-            [class.status-active]="p.statut === 'EN_COURS'"
-            [class.status-completed]="p.statut === 'TERMINE'"
-          >
+          <span class="status-badge" [class.status-termine]="p.statut === 'TERMINE'">
             {{ p.statut === 'EN_COURS' ? 'En cours' : 'Terminé' }}
           </span>
         </div>
 
-        <p class="project-description">{{ p.description || 'Aucune description' }}</p>
+        <p class="project-description">
+          {{ p.description || 'Aucune description' }}
+        </p>
 
         <div class="project-meta">
           <div class="meta-item">
-            <span class="meta-icon">🏢</span>
-            <span class="meta-text">{{ p.organisationNom }}</span>
+            🏢 {{ p.organisationNom }}
           </div>
+
           <div class="meta-item">
-            <span class="meta-icon">📅</span>
-            <span class="meta-text">{{ p.dateCreation | date:'dd/MM/yyyy' }}</span>
+            📅 {{ p.dateCreation | date:'dd/MM/yyyy' }}
           </div>
         </div>
 
+        <!-- Actions -->
         <div class="project-actions">
+
+          <!-- Localisation -->
           <button
-            class="btn-action btn-edit"
-            title="Modifier"
+            class="btn-outline-primary"
+            *ngIf="hasGPS(p)"
+            (click)="openMap(p)"
+            title="Voir sur la carte"
+          >
+            <i class="bi bi-geo-alt-fill"></i>
+          </button>
+
+          <!-- Modifier -->
+          <button
+            class="btn-outline-warning"
             (click)="modifierProjet(p)"
             [disabled]="loading"
+            title="Modifier"
           >
-            <span class="btn-icon">✏️</span>
-            <span class="btn-text">Modifier</span>
+            <i class="bi bi-pencil-fill"></i>
           </button>
 
+          <!-- Supprimer -->
           <button
-            class="btn-action btn-delete"
-            title="Supprimer"
+            class="btn-outline-danger"
             (click)="supprimerProjet(p.id)"
             [disabled]="loading"
+            title="Supprimer"
           >
-            <span class="btn-icon">🗑️</span>
-            <span class="btn-text">Supprimer</span>
+            <i class="bi bi-trash-fill"></i>
           </button>
+
         </div>
+
       </div>
     </div>
   </div>
+
 </div>
 
-<!-- Modal Edit Project -->
-<div class="modal-overlay" *ngIf="projetModif" (click)="fermerModal()"></div>
-<div class="modal-container" *ngIf="projetModif" (click)="$event.stopPropagation()">
-  <div class="modal-card">
+<!-- ===================== MODAL DE MODIFICATION ===================== -->
+<div class="modal-overlay" *ngIf="projetModif" (click)="fermerModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+
     <div class="modal-header">
-      <h2 class="modal-title">✏️ Modifier le projet</h2>
-      <button class="btn-close" (click)="fermerModal()" aria-label="Fermer">×</button>
+      <h2>✏️ Modifier le projet</h2>
+      <button class="close-btn" (click)="fermerModal()" type="button">✕</button>
     </div>
 
     <div class="modal-body">
+
+      <!-- TITRE -->
       <div class="form-group">
-        <label for="titre" class="form-label">Titre du projet</label>
+        <label for="titre">Titre *</label>
         <input
           id="titre"
           type="text"
-          class="form-input"
           [(ngModel)]="projetModif.titre"
-          placeholder="Ex: Construction d'une école"
+          class="form-control"
+          placeholder="Titre du projet"
+          required
         >
       </div>
 
+      <!-- DESCRIPTION -->
       <div class="form-group">
-        <label for="description" class="form-label">Description</label>
+        <label for="description">Description</label>
         <textarea
           id="description"
-          class="form-textarea"
           [(ngModel)]="projetModif.description"
-          placeholder="Décrivez votre projet en détail..."
+          class="form-control"
           rows="4"
+          placeholder="Description du projet"
         ></textarea>
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label for="statut" class="form-label">Statut</label>
-          <select id="statut" class="form-select" [(ngModel)]="projetModif.statut">
-            <option value="EN_COURS">En cours</option>
-            <option value="TERMINE">Terminé</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-checkbox">
-            <input type="checkbox" [(ngModel)]="projetModif.urgent">
-            <span class="checkbox-label">
-              Marquer comme urgent
-              <span *ngIf="projetModif.urgent" class="badge-urgent-inline">🔥</span>
-            </span>
-          </label>
-        </div>
-      </div>
-
+      <!-- STATUT -->
       <div class="form-group">
-        <label for="media" class="form-label">Média (Image ou Vidéo)</label>
-        <div class="file-input-wrapper">
+        <label for="statut">Statut</label>
+        <select id="statut" [(ngModel)]="projetModif.statut" class="form-control">
+          <option value="EN_COURS">En cours</option>
+          <option value="TERMINE">Terminé</option>
+        </select>
+      </div>
+
+      <!-- URGENT -->
+      <div class="form-group checkbox-group">
+        <label>
           <input
-            id="media"
-            type="file"
-            class="file-input"
-            (change)="changerMedia($event)"
-            accept="image/*,video/*"
+            type="checkbox"
+            [(ngModel)]="projetModif.urgent"
           >
-          <label for="media" class="file-label">
-            <span class="file-icon">📁</span>
-            <span>Choisir un fichier</span>
-          </label>
+          <span>🚨 Projet urgent</span>
+        </label>
+      </div>
+
+      <!-- GPS COORDINATES avec Bouton -->
+      <div class="form-group">
+        <label>
+          <i class="bi bi-geo-alt-fill"></i> Position GPS *
+        </label>
+
+        <div class="gps-input-group">
+          <div class="gps-coords-display">
+            <div class="coord-item">
+              <span class="coord-label">
+                <i class="bi bi-arrow-up-right-circle-fill"></i> Latitude:
+              </span>
+              <span class="coord-value">{{ projetModif.latitude || 'Non définie' }}</span>
+            </div>
+            <div class="coord-item">
+              <span class="coord-label">
+                <i class="bi bi-arrow-right-circle-fill"></i> Longitude:
+              </span>
+              <span class="coord-value">{{ projetModif.longitude || 'Non définie' }}</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="btn-choose-location"
+            (click)="ouvrirCarteSelection()"
+          >
+            <i class="bi bi-pin-map-fill"></i>
+            <span>Choisir sur la carte</span>
+          </button>
         </div>
       </div>
 
-      <div class="media-preview" *ngIf="projetModif.mediaUrl">
-        <p class="preview-label">Aperçu actuel :</p>
-        <ng-container [ngSwitch]="projetModif.mediaType">
-          <img
-            *ngSwitchCase="'image'"
-            [src]="projetModif.mediaUrl"
-            alt="Aperçu"
-            (error)="onImgError($event)"
-            class="preview-img"
-          >
-          <video
-            *ngSwitchCase="'video'"
-            [src]="projetModif.mediaUrl"
-            preload="metadata"
-            controls
-            playsinline
-            class="preview-video"
-          ></video>
-        </ng-container>
+      <!-- IMAGE -->
+      <div class="form-group">
+        <label for="image">Image du projet</label>
+        <input
+          id="image"
+          type="file"
+          (change)="changerMedia($event)"
+          accept="image/*,video/*"
+          class="form-control"
+        >
+        <div class="preview" *ngIf="projetModif.mediaUrl">
+          <img [src]="projetModif.mediaUrl" alt="Aperçu">
+        </div>
       </div>
+
+      <!-- ERREUR -->
+      <div class="alert-error" *ngIf="error">
+        ⚠️ {{ error }}
+      </div>
+
     </div>
 
     <div class="modal-footer">
       <button
-        class="btn btn-primary"
-        (click)="sauvegarderProjet()"
+        class="btn-secondary"
+        (click)="fermerModal()"
         [disabled]="loading"
+        type="button"
       >
-        <span *ngIf="!loading">💾 Sauvegarder</span>
-        <span *ngIf="loading" class="spinner-small"></span>
+        Annuler
       </button>
-      <button class="btn btn-secondary" (click)="fermerModal()">
-        ❌ Annuler
+      <button
+        class="btn-primary"
+        (click)="sauvegarderProjet()"
+        [disabled]="loading || !projetModif.titre || !projetModif.titre.trim()"
+        type="button"
+      >
+        <span *ngIf="loading">⏳ Enregistrement...</span>
+        <span *ngIf="!loading">💾 Enregistrer</span>
       </button>
     </div>
+
+  </div>
+</div>
+
+<!-- ===================== MODAL SÉLECTION GPS ===================== -->
+<div class="gps-modal-overlay" *ngIf="showMapSelector" (click)="fermerCarteSelection()">
+  <div class="gps-modal-content" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="gps-modal-header">
+      <div class="gps-header-info">
+        <h2>
+          <i class="bi bi-pin-map-fill"></i>
+          Sélectionner la position
+        </h2>
+        <p class="gps-instruction">
+          Cliquez sur la carte pour définir la position du projet
+        </p>
+      </div>
+      <button class="gps-close-btn" (click)="fermerCarteSelection()" type="button">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Map Container -->
+    <div class="gps-map-container">
+      <div id="map" class="gps-map"></div>
+
+      <!-- Position actuelle affichée -->
+      <div class="map-position-display" *ngIf="tempLatitude && tempLongitude">
+        <div class="position-card">
+          <h4>
+            <i class="bi bi-cursor-fill"></i>
+            Position sélectionnée
+          </h4>
+          <div class="position-coords">
+            <span><strong>Lat:</strong> {{ tempLatitude | number:'1.6-6' }}</span>
+            <span><strong>Long:</strong> {{ tempLongitude | number:'1.6-6' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Locate Me Button -->
+      <button class="locate-me-btn" (click)="centrerSurMaPosition()" title="Me localiser">
+        <i class="bi bi-crosshair"></i>
+      </button>
+    </div>
+
+    <!-- Actions Footer -->
+    <div class="gps-modal-footer">
+      <button class="gps-action-btn btn-cancel" (click)="fermerCarteSelection()">
+        <i class="bi bi-x-circle-fill"></i>
+        <span>Annuler</span>
+      </button>
+      <button
+        class="gps-action-btn btn-validate"
+        (click)="validerPosition()"
+        [disabled]="!tempLatitude || !tempLongitude"
+      >
+        <i class="bi bi-check-circle-fill"></i>
+        <span>Valider la position</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===================== MODAL VISUALISATION GPS (carte de consultation) ===================== -->
+<div class="gps-modal-overlay" *ngIf="projetGPS" (click)="fermerMapModal()">
+  <div class="gps-modal-content" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="gps-modal-header">
+      <div class="gps-header-info">
+        <h2>
+          <i class="bi bi-geo-alt-fill"></i>
+          {{ projetGPS.titre }}
+        </h2>
+        <p class="gps-coordinates">
+          <span class="coord-label">
+            <i class="bi bi-arrow-up-right-circle-fill"></i> Lat:
+          </span>
+          {{ projetGPS.latitude | number:'1.6-6' }}
+          <span class="coord-separator">•</span>
+          <span class="coord-label">
+            <i class="bi bi-arrow-right-circle-fill"></i> Long:
+          </span>
+          {{ projetGPS.longitude | number:'1.6-6' }}
+        </p>
+      </div>
+      <button class="gps-close-btn" (click)="fermerMapModal()" type="button">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Map Container -->
+    <div class="gps-map-container">
+      <div id="mapView" class="gps-map"></div>
+
+      <!-- Map Overlay Info -->
+      <div class="map-overlay-card">
+        <div class="overlay-card-header">
+          <span class="overlay-icon">
+            <i class="bi bi-building"></i>
+          </span>
+          <h4>{{ projetGPS.organisationNom }}</h4>
+        </div>
+        <div class="overlay-card-body">
+          <p *ngIf="projetGPS.description">
+            <i class="bi bi-card-text"></i>
+            {{ projetGPS.description }}
+          </p>
+          <div class="overlay-meta">
+            <div class="meta-badge">
+              <i class="bi bi-calendar3"></i>
+              {{ projetGPS.dateCreation | date:'dd/MM/yyyy' }}
+            </div>
+            <div class="overlay-status">
+              <span class="status-dot" [class.status-termine]="projetGPS.statut === 'TERMINE'"></span>
+              <span>{{ projetGPS.statut === 'EN_COURS' ? 'En cours' : 'Terminé' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions Footer -->
+    <div class="gps-modal-footer">
+      <button class="gps-action-btn btn-directions" (click)="ouvrirDirections()">
+        <i class="bi bi-compass-fill"></i>
+        <span>Itinéraire</span>
+      </button>
+      <button class="gps-action-btn btn-share" (click)="partagerLocalisation()">
+        <i class="bi bi-share-fill"></i>
+        <span>Partager</span>
+      </button>
+      <button class="gps-action-btn btn-copy" (click)="copierCoordonnees()">
+        <i class="bi bi-clipboard-fill"></i>
+        <span>Copier</span>
+      </button>
+    </div>
+
   </div>
 </div>

@@ -134,7 +134,9 @@ export class Header {
         dateDebut: ev.dateDebut || this.todayISO(),
         dateFin: ev.dateFin,
         description: ev.description,
-        lieu: ev.lieu,
+        latitude: Number(ev.latitude),   // ✅ OBLIGATOIRE
+    longitude: Number(ev.longitude), // ✅ OBLIGATOIRE
+
         image: ev.imageFile ?? null,
         organisationId: orgId // lié côté back → permettra d'afficher le nom d'orga
       } as ActiviteUpsert))

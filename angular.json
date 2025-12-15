@@ -25,17 +25,13 @@
                 "glob": "**/*",
                 "input": "public"
               },
-                "src/assets"
-
+              "src/assets"
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles.scss",
+              "node_modules/leaflet/dist/leaflet.css"
             ],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
-            "ssr": {
-              "entry": "src/server.ts"
-            }
+            "outputMode": "static"
           },
           "configurations": {
             "production": {
@@ -76,9 +72,6 @@
         "extract-i18n": {
           "builder": "@angular/build:extract-i18n"
         },
-        "scripts": {
-          "start": "ng serve --proxy-config proxy.conf.json"
-        },
         "test": {
           "builder": "@angular/build:karma",
           "options": {
@@ -94,15 +87,15 @@
               "src/styles.scss"
             ],
             "fileReplacements": [
-                { "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.development.ts" }
-              ]
-
+              {
+                "replace": "src/environments/environment.ts",
+                "with": "src/environments/environment.development.ts"
+              }
+            ]
           }
         }
       }
     }
-
   },
   "cli": {
     "analytics": "5625c599-c92f-46ce-9e05-97fd2d135004"

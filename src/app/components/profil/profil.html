@@ -1,29 +1,37 @@
 <div class="profil-page container mt-4">
   <h2>Mon Profil</h2>
 
-  <div *ngIf="loading" class="text-muted">Chargement du profil…</div>
-  <div *ngIf="!loading && error" class="alert alert-danger">{{ error }}</div>
+  <div *ngIf="loading" class="text-muted">
+    Chargement du profil…
+  </div>
 
-  <div *ngIf="!loading && !error && user" class="profil-info d-flex align-items-center">
-    <img *ngIf="user?.profilImageUrl"
-         [src]="user.profilImageUrl"
-         alt="Photo de profil"
-         class="profil-photo me-3 rounded-circle"
-         width="120" height="120"
-         (error)="imgFallback($event, 'assets/user.png')">
+  <div *ngIf="!loading && error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!loading && user" class="profil-info">
+    <img
+      [src]="user.profilImageUrl || 'assets/user.png'"
+      alt="Photo de profil"
+      class="profil-photo"
+      width="120"
+      height="120"
+      (error)="imgFallback($event)"
+    >
 
     <div>
-      <p><strong>Nom d’utilisateur :</strong> {{ user.username || '—' }}</p>
+      <p><strong>Nom d'utilisateur :</strong> {{ user.username || '—' }}</p>
       <p><strong>Email :</strong> {{ user.email || '—' }}</p>
       <p><strong>Téléphone :</strong> {{ user.telephone || '—' }}</p>
       <p><strong>Adresse :</strong> {{ user.adresse || '—' }}</p>
       <p><strong>Profil :</strong> {{ user.profil || '—' }}</p>
-      <p *ngIf="user.roles"><strong>Rôles :</strong> {{ user.roles }}</p>
+      <p *ngIf="user?.roles?.length">
+        <strong>Rôles :</strong> {{ rolesAsText }}
+      </p>
     </div>
   </div>
 
-  <button class="btn btn-danger mt-3" (click)="logout()">Se déconnecter</button>
-
-  <!-- Debug temporaire (à retirer quand OK) -->
-  <!-- <pre>{{ user | json }}</pre> -->
+  <button class="btn btn-danger mt-4" (click)="logout()">
+    Se déconnecter
+  </button>
 </div>

@@ -1,112 +1,153 @@
-.footer-male {
-  background: #121212; /* fond noir élégant */
-  color: #e0e0e0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* ===================== FOOTER GLOBAL ===================== */
+.neo-footer {
+  width: 100%;
+  margin-top: 100px;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Bandeau supérieur bleu foncé */
-.footer-top {
-  background: #00529B; /* bleu corporate */
-  color: #fff;
-  padding: 25px;
-  text-align: center;
+/* Halo lumineux */
+.neo-footer::before {
+  content: "";
+  position: absolute;
+  top: -150px;
+  right: -150px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(79,172,254,0.4), transparent 70%);
+  filter: blur(80px);
 }
 
-.footer-top h3 {
-  margin-bottom: 8px;
-  font-size: 20px;
-}
-
-.footer-top p {
-  margin-bottom: 12px;
-  font-size: 14px;
-  color: #dcefff;
-}
-
-.newsletter-form {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.newsletter-form input {
-  padding: 10px;
-  border: none;
-  border-radius: 4px;
-  min-width: 250px;
-}
-
-.newsletter-form button {
-  padding: 10px 18px;
-  background: #1CABE2;
-  border: none;
-  border-radius: 4px;
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.newsletter-form button:hover {
-  background: #148bb8;
-}
-
-/* Partie principale */
-.footer-inner {
+/* ===================== CONTENEUR GLASS ===================== */
+.footer-glass {
+  max-width: 1400px;
+  margin: auto;
+  padding: 70px 24px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 30px;
-  padding: 40px 50px;
-  border-bottom: 1px solid #2a2a2a;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 50px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(14px);
+  border-radius: 40px;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+  position: relative;
+  z-index: 2;
 }
 
-.footer-brand p {
-  margin-top: 10px;
-  font-size: 14px;
-  color: #b5b5b5;
+/* ===================== COLONNES ===================== */
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.footer-links h4,
-.footer-contact h4,
-.footer-social h4 {
-  margin-bottom: 12px;
-  font-size: 16px;
-  color: #f5f5f5;
+.footer-col h4 {
+  color: #00f2fe;
+  font-weight: 800;
+  letter-spacing: 0.6px;
 }
 
-.footer-links a {
-  display: block;
-  margin: 6px 0;
-  color: #b5b5b5;
+/* ===================== BRAND ===================== */
+.brand-col img {
+  width: 64px;
+  margin-bottom: 10px;
+}
+
+.brand-col h3 {
+  font-size: 1.6rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-col p {
+  color: #e5e7eb;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* ===================== LIENS ===================== */
+.footer-col a {
+  color: #e5e7eb;
+  font-weight: 600;
+  font-size: 0.95rem;
   text-decoration: none;
-  transition: color 0.2s;
+  transition: all 0.3s ease;
 }
 
-.footer-links a:hover {
-  color: #1CABE2;
+.footer-col a:hover {
+  color: #00f2fe;
+  transform: translateX(6px);
 }
 
-.footer-contact p {
-  margin: 5px 0;
-  font-size: 14px;
-  color: #ccc;
+/* ===================== CONTACT ===================== */
+.footer-col span {
+  color: #e5e7eb;
+  font-size: 0.92rem;
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
-.footer-social a {
-  color: #b5b5b5;
-  margin-right: 10px;
-  font-size: 20px;
-  transition: color 0.2s;
+.footer-col i {
+  color: #00f2fe;
 }
 
-.footer-social a:hover {
-  color: #1CABE2;
+/* ===================== SOCIAL ===================== */
+.social-row {
+  display: flex;
+  gap: 14px;
 }
 
-/* Bas */
-.footer-bottom {
+.social-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+.social-btn:hover {
+  transform: translateY(-6px) scale(1.1);
+  color: white;
+}
+
+.fb:hover { background: #1877f2; }
+.tw:hover { background: #1da1f2; }
+.in:hover { background: #0a66c2; }
+
+/* ===================== FOOTER BOTTOM ===================== */
+.footer-bottom-modern {
   text-align: center;
-  padding: 15px;
-  font-size: 13px;
-  color: #888;
+  padding: 22px;
+  font-size: 0.85rem;
+  letter-spacing: 0.8px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #e5e7eb;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ===================== RESPONSIVE ===================== */
+@media (max-width: 768px) {
+  .footer-glass {
+    padding: 50px 20px;
+    border-radius: 30px;
+  }
+
+  .brand-col {
+    text-align: center;
+    align-items: center;
+  }
+
+  .social-row {
+    justify-content: center;
+  }
 }

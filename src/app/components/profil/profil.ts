@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { UserProfile, UserService } from '../../services/profil';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-profil',
@@ -10,35 +12,40 @@ import { UserProfile, UserService } from '../../services/profil';
   styleUrls: ['./profil.scss']
 })
 export class Profil implements OnInit {
-  user!: UserProfile;
+  user: UserProfile | null = null;
   loading = true;
   error = '';
 
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-    // IMPORTANT: assure-toi d’avoir provideHttpClient(withFetch()) ou HttpClientModule
     this.userService.getProfile().subscribe({
-      next: (data) => { this.user = data; this.loading = false; },
+      next: (data) => {
+        this.user = data;
+        this.loading = false;
+      },
       error: (err) => {
+        console.error('[Profil] load error:', err);
         this.error = 'Impossible de charger le profil utilisateur.';
         this.loading = false;
-        console.error('[Profil] load error:', err);
       }
     });
-
-    // pare-feu si l’Observable ne termine pas (évite "Chargement…" bloqué)
-    setTimeout(() => { if (this.loading) this.loading = false; }, 8000);
   }
 
   logout(): void {
-    // adapte selon ta stratégie (cookies httpOnly côté back -> appelle /auth/logout et redirect)
-    localStorage.removeItem('access_token');
-    window.location.href = '/login';
+    this.authService.deconnexion();
+    this.router.navigate(['/login'], { replaceUrl: true });
   }
 
-  imgFallback(ev: Event, url: string) {
+  imgFallback(ev: Event) {
     const img = ev.target as HTMLImageElement | null;
-    if (img && img.src !== url) img.src = url;
+    if (img) img.src = 'assets/user.png';
   }
+  get rolesAsText(): string {
+  return this.user?.roles?.join(', ') ?? '—';
+}
 }

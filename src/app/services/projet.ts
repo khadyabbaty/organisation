@@ -1,17 +1,20 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of, switchMap, map, tap } from 'rxjs';
-import { environment } from '../../environments/environment';
+// ========================================
+// projet.ts (SERVICE - BACKEND FILTRE DÉJÀ)
+// ========================================
 
-const HEADER_ORG = 'X-ORGANISATION-ID';
-const ORG_STORAGE_KEY = 'orgId';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, throwError, map, tap } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { AuthService, InfoUtilisateur } from './auth';
 
 export interface ActiviteUpsert {
   titre: string;
-  dateDebut: string;      // YYYY-MM-DD
+  dateDebut: string;
   dateFin?: string;
   description?: string;
-  lieu?: string;
+  latitude?: number;
+  longitude?: number;
   organisationId?: string;
   image?: File | null;
   urgent?: boolean;
@@ -25,8 +28,11 @@ interface ActiviteApi {
   dateFin?: string;
   lieu?: string;
   image?: string;
-  organisation?: { id: string; nom: string } | null;
+  organisationId?: string | null;
+  organisationNom?: string | null;
   urgent?: boolean;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface Projet {
@@ -40,16 +46,21 @@ export interface Projet {
   mediaUrl?: string;
   mediaType?: 'image' | 'video';
   urgent?: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ProjetsApi {
   private readonly api = (environment.apiUrl || '').replace(/\/+$/, '');
   private readonly base = `${this.api}/api/activites`;
+  private authService = inject(AuthService);
 
   constructor(private http: HttpClient) {}
 
-  /* ---------------- Token Helper ---------------- */
+  // ========================================
+  // TOKEN MANAGEMENT
+  // ========================================
   private getToken(): string | null {
     const raw = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
     if (!raw) return null;
@@ -63,58 +74,16 @@ export class ProjetsApi {
     return h;
   }
 
-  /* ---------------- Organization ID Cache ---------------- */
-  private get cachedOrgId(): string | null {
-    try {
-      return localStorage.getItem(ORG_STORAGE_KEY) || sessionStorage.getItem(ORG_STORAGE_KEY);
-    } catch {
-      return null;
-    }
+  // ========================================
+  // USER INFO
+  // ========================================
+  private getCurrentUserInfo(): InfoUtilisateur | null {
+    return this.authService.obtenirUtilisateurCourant();
   }
 
-  private set cachedOrgId(v: string | null) {
-    try {
-      if (v) localStorage.setItem(ORG_STORAGE_KEY, v);
-      else localStorage.removeItem(ORG_STORAGE_KEY);
-    } catch {}
-  }
-
-  /** Fetch orgId from /auth/me and cache it */
-  private ensureOrgId$(): Observable<string> {
-    const cached = this.cachedOrgId;
-    if (cached) return of(cached);
-
-    const headers = this.authHeaders();
-    return this.http.get<any>(`${this.api}/auth/me`, { headers }).pipe(
-      map(r => {
-        console.log('[ProjetsApi] /auth/me response:', r);
-
-        // Try different possible field names for organization ID
-        const orgId = r?.orgId ||
-                     r?.organisationId ||
-                     r?.organization?.id ||
-                     r?.organisation?.id ||
-                     r?.user?.orgId ||
-                     r?.user?.organisationId ||
-                     '';
-
-        console.log('[ProjetsApi] Extracted orgId:', orgId);
-        return orgId;
-      }),
-      tap(id => {
-        if (!id) {
-          console.error('[ProjetsApi] orgId not found in /auth/me response');
-          throw new Error('orgId absent dans /auth/me');
-        }
-      }),
-      tap(id => {
-        console.log('[ProjetsApi] Caching orgId:', id);
-        this.cachedOrgId = id;
-      })
-    );
-  }
-
-  /* ---------------- Media URL Helpers ---------------- */
+  // ========================================
+  // MEDIA URL HELPERS
+  // ========================================
   private basename(p?: string): string {
     if (!p) return '';
     const s = String(p).trim().replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
@@ -139,15 +108,20 @@ export class ProjetsApi {
     return a?.image ?? a?.imageUrl ?? a?.photo ?? a?.media ?? a?.filename ?? '';
   }
 
-  /* ---------------- Mapping ---------------- */
+  // ========================================
+  // MAPPING
+  // ========================================
   private toProjet(a: any): Projet {
     const d0 = a?.dateDebut ? new Date(a.dateDebut) : new Date();
     const d1 = a?.dateFin ? new Date(a.dateFin) : undefined;
-    const statut: 'EN_COURS' | 'TERMINE' = d1 ? (new Date() > d1 ? 'TERMINE' : 'EN_COURS') : 'EN_COURS';
+
+    const statut: 'EN_COURS' | 'TERMINE' =
+      d1 ? (new Date() > d1 ? 'TERMINE' : 'EN_COURS') : 'EN_COURS';
 
     const raw = this.pickImageField(a);
     const mediaUrl = this.resolveMediaUrl(raw);
     const ext = this.basename(raw).split('.').pop()?.toLowerCase();
+
     const mediaType: 'image' | 'video' =
       ext && ['mp4', 'webm', 'ogg', 'mov'].includes(ext) ? 'video' : 'image';
 
@@ -157,89 +131,116 @@ export class ProjetsApi {
       description: a.description ?? '',
       statut,
       dateCreation: d0,
-      organisationNom: a.organisation?.nom ?? '—',
-      organisationId: a.organisation?.id ?? undefined,
+      organisationNom: a.organisationNom ?? a.organisation?.nom ?? '—',
+      organisationId: a.organisationId ?? a.organisation?.id ?? undefined,
       mediaUrl,
       mediaType,
-      urgent: !!a.urgent
+      urgent: !!a.urgent,
+      latitude: a.latitude != null ? Number(a.latitude) : null,
+      longitude: a.longitude != null ? Number(a.longitude) : null
     };
   }
 
-  /* ---------------- Public API Methods ---------------- */
+  // ========================================
+  // PUBLIC API METHODS
+  // ========================================
 
-  /** Get all projects for current organization */
+  /** ✅ GET - PROJETS (Le backend filtre déjà par organisation) */
   getAllMine(): Observable<Projet[]> {
-    return this.ensureOrgId$().pipe(
-      switchMap(orgId => {
-        let headers = this.authHeaders();
-        headers = headers.set(HEADER_ORG, orgId);
+    const currentUser = this.getCurrentUserInfo();
 
-        console.log('[ProjetsApi] Fetching projects with orgId:', orgId);
-        console.log('[ProjetsApi] Request URL:', this.base);
-        console.log('[ProjetsApi] Headers:', headers.keys());
+    if (!currentUser) {
+      console.error('❌ [ProjetsApi] Aucun utilisateur connecté');
+      return throwError(() => new Error('Utilisateur non authentifié'));
+    }
 
-        return this.http.get<ActiviteApi[]>(this.base, { headers });
-      }),
-      map(list => {
-        console.log('[ProjetsApi] Received projects:', list?.length || 0);
-        return (list ?? []).map(row => this.toProjet(row));
-      })
-    );
-  }
-
-  /** Get all projects (admin only - scope=all) */
-  getAllScopeAll(): Observable<Projet[]> {
     const headers = this.authHeaders();
-    return this.http.get<ActiviteApi[]>(`${this.base}?scope=all`, { headers }).pipe(
-      map(list => (list ?? []).map(row => this.toProjet(row)))
-    );
-  }
+    console.log(`🔒 [ProjetsApi] Récupération des projets pour: ${currentUser.orgId || currentUser.username}`);
 
-  /** Create new project */
-  create(p: ActiviteUpsert): Observable<Projet> {
-    return this.ensureOrgId$().pipe(
-      switchMap(orgId => {
-        const fd = this.toFormData({ ...p, organisationId: p.organisationId ?? orgId });
-        let headers = this.authHeaders();
-        headers = headers.set(HEADER_ORG, orgId);
-        return this.http.post<ActiviteApi>(this.base, fd, { headers });
+    // ✅ LE BACKEND FILTRE DÉJÀ PAR ORGANISATION
+    // Pas besoin de filtrer côté client
+    return this.http.get<ActiviteApi[]>(this.base, { headers }).pipe(
+      map(list => {
+        console.log(`📥 [ProjetsApi] ${list?.length || 0} projets reçus du serveur`);
+        return (list ?? []).map(row => this.toProjet(row));
       }),
-      map(a => this.toProjet(a))
-    );
-  }
-
-  /** Update existing project */
-  update(id: string | number, p: ActiviteUpsert): Observable<Projet> {
-    return this.ensureOrgId$().pipe(
-      switchMap(orgId => {
-        const fd = this.toFormData({ ...p, organisationId: p.organisationId ?? orgId });
-        let headers = this.authHeaders();
-        headers = headers.set(HEADER_ORG, orgId);
-        return this.http.put<ActiviteApi>(`${this.base}/${id}`, fd, { headers });
-      }),
-      map(a => this.toProjet(a))
-    );
-  }
-
-  /** Delete project */
-  delete(id: string | number): Observable<void> {
-    return this.ensureOrgId$().pipe(
-      switchMap(orgId => {
-        let headers = this.authHeaders();
-        headers = headers.set(HEADER_ORG, orgId);
-        return this.http.delete<void>(`${this.base}/${id}`, { headers });
+      tap(projets => {
+        console.log(`✅ [ProjetsApi] ${projets.length} projet(s) chargé(s)`);
       })
     );
   }
 
-  /* ---------------- FormData Helper ---------------- */
+  /** ✅ CREATE - Associé à l'utilisateur courant */
+  create(p: ActiviteUpsert): Observable<Projet> {
+    const currentUser = this.getCurrentUserInfo();
+
+    if (!currentUser) {
+      return throwError(() => new Error('Utilisateur non authentifié'));
+    }
+
+    const payload: ActiviteUpsert = {
+      ...p,
+      organisationId: currentUser.orgId || currentUser.organisationId || undefined
+    };
+
+    const fd = this.toFormData(payload);
+    const headers = this.authHeaders();
+
+    console.log(`🔒 [ProjetsApi] Création de projet pour orgId: ${payload.organisationId}`);
+
+    return this.http.post<ActiviteApi>(this.base, fd, { headers }).pipe(
+      map(a => this.toProjet(a))
+    );
+  }
+
+  /** ✅ UPDATE */
+  update(id: string | number, p: ActiviteUpsert): Observable<Projet> {
+    const currentUser = this.getCurrentUserInfo();
+
+    if (!currentUser) {
+      return throwError(() => new Error('Utilisateur non authentifié'));
+    }
+
+    const payload: ActiviteUpsert = {
+      ...p,
+      organisationId: currentUser.orgId || currentUser.organisationId || undefined
+    };
+
+    const fd = this.toFormData(payload);
+    const headers = this.authHeaders();
+
+    console.log(`🔒 [ProjetsApi] Mise à jour du projet ${id}`);
+
+    return this.http.put<ActiviteApi>(`${this.base}/${id}`, fd, { headers }).pipe(
+      map(a => this.toProjet(a))
+    );
+  }
+
+  /** ✅ DELETE */
+  delete(id: string | number): Observable<void> {
+    const currentUser = this.getCurrentUserInfo();
+
+    if (!currentUser) {
+      return throwError(() => new Error('Utilisateur non authentifié'));
+    }
+
+    const headers = this.authHeaders();
+    console.log(`🔒 [ProjetsApi] Suppression du projet ${id}`);
+
+    return this.http.delete<void>(`${this.base}/${id}`, { headers });
+  }
+
+  // ========================================
+  // FORMDATA HELPER
+  // ========================================
   private toFormData(p: ActiviteUpsert): FormData {
     const fd = new FormData();
     fd.append('titre', p.titre);
     fd.append('dateDebut', p.dateDebut);
     if (p.dateFin) fd.append('dateFin', p.dateFin);
     if (p.description) fd.append('description', p.description);
-    if (p.lieu) fd.append('lieu', p.lieu);
+    if (p.latitude != null) fd.append('latitude', String(p.latitude));
+    if (p.longitude != null) fd.append('longitude', String(p.longitude));
     if (p.organisationId) fd.append('organisationId', p.organisationId);
     if (p.image) fd.append('image', p.image);
     if (typeof p.urgent === 'boolean') fd.append('urgent', String(p.urgent));

@@ -1,137 +1,229 @@
+/* ===================== HEADER GLOBAL ===================== */
 .site-header {
-  background: #1CABE2;
-  color: #fff;
-  padding: 12px 0;
+  position: sticky;
+  top: 0;
+  z-index: 9998;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
+}
+
+/* ===================== HEADER INNER ===================== */
+.header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+/* ===================== BRAND ===================== */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #2d3748;
+  letter-spacing: 0.3px;
+}
+
+.brand img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.brand span {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ===================== BURGER ===================== */
+.burger {
+  display: none;
+  border: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+}
+
+.burger:hover {
+  transform: scale(1.1);
+}
+
+/* ===================== NAV ===================== */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.nav-links a {
   position: relative;
-  z-index: 1000;
-
-  .header-inner {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: bold;
-    font-size: 18px;
-
-    img {
-      height: 45px;
-      border-radius: 8px;
-    }
-  }
-
-  .burger {
-    display: none;
-    font-size: 26px;
-    background: none;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    z-index: 1100;
-  }
-
-  .nav-links {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    transition: transform 0.3s ease-in-out;
-
-    a {
-      color: #fff;
-      text-decoration: none;
-      font-weight: 500;
-      padding: 6px 10px;
-      border-radius: 6px;
-      transition: 0.3s;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.15);
-      }
-
-      &.active {
-        background: #00529B;
-      }
-    }
-
-    .btn-unicef {
-      background: #00529B;
-      color: #fff;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: 0.3s;
-
-      &:hover {
-        background: #003f73;
-      }
-    }
-  }
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #4a5568;
+  transition: all 0.3s ease;
 }
-.brand img { max-height: 40px; display: inline-block; }
 
-/* ✅ Version mobile + animation */
-@media (max-width: 768px) {
-  .burger {
-    display: block;
-  }
-
-  .nav-links {
-    position: fixed;
-    top: 0;
-    right: 0;
-    height: 100%;
-    width: 220px;
-    background: #1CABE2;
-    flex-direction: column;
-    justify-content: center;
-    gap: 20px;
-    padding: 20px;
-    transform: translateX(100%);
-    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
-  }
-
-  .nav-links.open {
-    transform: translateX(0);
-  }
+.nav-links a i {
+  font-size: 1.1rem;
 }
-/* Backdrop sombre – utiliser RGBA (pas opacity globale) */
+
+.nav-links a:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.35);
+}
+
+/* ===================== ACTIVE LINK ===================== */
+.nav-links a.active {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  box-shadow: 0 6px 18px rgba(72, 187, 120, 0.4);
+}
+
+/* ===================== UNICEF STYLE BUTTON ===================== */
+.btn-unicef {
+  margin-left: 10px;
+  padding: 14px 22px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+  color: white;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.35s ease;
+  box-shadow: 0 6px 20px rgba(0, 114, 255, 0.4);
+}
+
+.btn-unicef:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 28px rgba(0, 114, 255, 0.6);
+}
+
+.btn-unicef:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===================== MODAL ===================== */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.5);
-  z-index: 999;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  z-index: 10000;
+  animation: fadeInOverlay 0.3s ease;
 }
 
-/* Boîte du modal, au-dessus du backdrop */
 .modal-box {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(720px, 92vw);
-  max-height: 90vh;
-  overflow: auto;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.2);
-  z-index: 1000;
-  padding: 16px;
+  background: white;
+  width: 95%;
+  max-width: 700px;
+  border-radius: 24px;
+  padding: 24px;
+  z-index: 10001;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  animation: popIn 0.4s ease;
 }
 
-/* Bouton fermer */
 .modal-close {
   position: absolute;
-  top: 8px;
-  right: 10px;
-  background: transparent;
-  border: 0;
-  font-size: 22px;
-  line-height: 1;
+  right: 16px;
+  top: 16px;
+  border: none;
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  color: white;
+  font-size: 1.4rem;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
   cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+  transform: rotate(90deg) scale(1.1);
+}
+
+/* ===================== RESPONSIVE ===================== */
+@media (max-width: 900px) {
+  .burger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-links {
+    position: absolute;
+    top: 100%;
+    right: 20px;
+    background: white;
+    flex-direction: column;
+    width: 270px;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+    pointer-events: none;
+    transition: all 0.3s ease;
+  }
+
+  .nav-links.open {
+    opacity: 1;
+    transform: translateY(10px) scale(1);
+    pointer-events: auto;
+  }
+
+  .nav-links a,
+  .btn-unicef {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ===================== ANIMATIONS ===================== */
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -60%) scale(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }

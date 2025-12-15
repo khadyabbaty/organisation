@@ -1,126 +1,192 @@
+// src/app/components/dons/dons.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DonService, DonStats } from '../../services/dons'; // <-- adapte le chemin si besoin
+import { FormsModule } from '@angular/forms';
 
-type TypeDon = 'financier' | 'nature' | 'parrainage' | 'evenementiel';
-
-interface DonCarte {
-  label: string;
-  color: string;   // classe bootstrap
-  icon: string;    // classe bootstrap-icons
-  type: TypeDon;
-}
+import { ProjetsApi, Projet } from '../../services/projet';
+import { DonService, ProjetDon } from '../../services/dons';
 
 @Component({
-  selector: 'app-donateur',
+  selector: 'app-dons',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './dons.html',
   styleUrls: ['./dons.scss']
 })
-export class dons implements OnInit {
-
-  // valeurs "réelles"
-  dons: Record<TypeDon, number> = {
-    financier: 0,
-    nature: 0,
-    parrainage: 0,
-    evenementiel: 0
-  };
-
-  // valeurs affichées (animées)
-  donsAffichage: Record<TypeDon, number> = {
-    financier: 0,
-    nature: 0,
-    parrainage: 0,
-    evenementiel: 0
-  };
-
-  // badge +N temporaire
-  plusBadge: Record<TypeDon, number | null> = {
-    financier: null,
-    nature: null,
-    parrainage: null,
-    evenementiel: null
-  };
-
-  cartes: DonCarte[] = [
-    { label: 'Financier',    color: 'primary', icon: 'bi-cash-stack',      type: 'financier' },
-    { label: 'Nature',       color: 'success', icon: 'bi-tree',            type: 'nature' },
-    { label: 'Parrainage',   color: 'info',    icon: 'bi-people',          type: 'parrainage' },
-    { label: 'Événementiel', color: 'warning', icon: 'bi-calendar-event',  type: 'evenementiel' }
-  ];
-
+export class Dons implements OnInit {
+  projets: Projet[] = [];
+  projetsDons: Map<string | number, ProjetDon> = new Map();
   loading = false;
-  error?: string;
+  error = '';
+  selectedProjet: ProjetDon | null = null;
 
-  constructor(private donsApi: DonService) {}
+  // Filters
+  search = '';
+
+  constructor(
+    private projetsApi: ProjetsApi,
+    private donService: DonService
+  ) {}
 
   ngOnInit(): void {
-    this.fetchStats();
+    this.chargerProjets();
   }
 
-  /** Charge les stats depuis /api/dons/stats */
-  fetchStats(): void {
+  // ===================== CHARGER LES PROJETS =====================
+  chargerProjets(): void {
     this.loading = true;
-    this.error = undefined;
+    this.error = '';
 
-    this.donsApi.getStats().subscribe({
-      next: (stats: DonStats) => {
-        // normalise et anime
-        const safe: DonStats = {
-          financier: stats?.financier ?? 0,
-          nature: stats?.nature ?? 0,
-          parrainage: stats?.parrainage ?? 0,
-          evenementiel: stats?.evenementiel ?? 0
-        };
-        (Object.keys(safe) as TypeDon[]).forEach((k) => {
-          const from = this.donsAffichage[k] ?? 0;
-          const to = safe[k] ?? 0;
-          this.dons[k] = to;
-          this.animateCount(k, from, to, 800);
-        });
-        this.loading = false;
+    this.projetsApi.getAllMine().subscribe({
+      next: (projets) => {
+        this.projets = projets;
+        console.log('✅ [Dons] Projets chargés:', projets.length);
+
+        // Charger les dons pour chaque projet
+        this.chargerDonsPourProjets(projets);
       },
-      error: () => {
-        this.error = 'Impossible de charger les statistiques.';
+      error: (err) => {
+        console.error('❌ [Dons] Erreur de chargement des projets:', err);
+        this.error = 'Impossible de charger les projets';
         this.loading = false;
       }
     });
   }
 
-  /** Animation du compteur */
-  private animateCount(type: TypeDon, from: number, to: number, duration = 800) {
-    const start = performance.now();
-    const diff = to - from;
+  // ===================== CHARGER LES DONS POUR CHAQUE PROJET =====================
+  chargerDonsPourProjets(projets: Projet[]): void {
+    let completed = 0;
+    const total = projets.length;
 
-    if (diff > 0) {
-      // affiche un badge +N furtif si progression
-      this.plusBadge[type] = diff;
-      setTimeout(() => (this.plusBadge[type] = null), 900);
-    }
-
-    if (diff === 0) {
-      this.donsAffichage[type] = to;
+    if (total === 0) {
+      this.loading = false;
       return;
     }
 
-    const step = (timestamp: number) => {
-      const elapsed = timestamp - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
-      this.donsAffichage[type] = Math.round(from + diff * eased);
-      if (progress < 1) requestAnimationFrame(step);
-      else this.donsAffichage[type] = to;
-    };
-    requestAnimationFrame(step);
-  }
-  // dans DonateurComponent (donateur.ts)
-  supprimerDon(id: number | string): void {
-    // Écran Donateur = dashboard de stats → pas de suppression ici par défaut
-    // Tu peux soit retirer le bouton dans le HTML, soit implémenter un vrai delete côté back + service.
-    console.warn('supprimerDon() appelé avec id =', id, '— non implémenté sur le dashboard Donateur.');
-    alert('Suppression non disponible sur cet écran.');
+    projets.forEach(projet => {
+      this.donService.getActiviteDons(projet.id as string).subscribe({
+        next: (projetDon) => {
+          this.projetsDons.set(projet.id, projetDon);
+          console.log(`✅ [Dons] Dons chargés pour projet ${projet.id}:`, projetDon);
+        },
+        error: (err) => {
+          // Si le projet n'a pas de dons, on met des valeurs par défaut
+          console.warn(`⚠️ [Dons] Aucun don pour projet ${projet.id}`);
+          this.projetsDons.set(projet.id, {
+            id: String(projet.id),
+            titre: projet.titre,
+            description: projet.description,
+            pourcentage: 0,
+            nombreDonateurs: 0,
+            donateurs: [],
+            montantRecolte: 0,
+            objectifFinancier: 0
+          });
+        },
+        complete: () => {
+          completed++;
+          if (completed === total) {
+            this.loading = false;
+            console.log('✅ [Dons] Tous les dons chargés:', this.projetsDons.size);
+          }
+        }
+      });
+    });
   }
 
+  // ===================== FILTERED PROJECTS =====================
+  get filtered(): Projet[] {
+    let result = this.projets;
+
+    if (this.search.trim()) {
+      const term = this.search.toLowerCase();
+      result = result.filter(p =>
+        p.titre.toLowerCase().includes(term) ||
+        (p.description && p.description.toLowerCase().includes(term)) ||
+        p.organisationNom.toLowerCase().includes(term)
+      );
+    }
+
+    return result;
+  }
+
+  // ===================== TRACK BY =====================
+  trackById(index: number, item: Projet): string | number {
+    return item.id;
+  }
+
+  // ===================== HELPERS =====================
+  getDonData(projetId: string | number): ProjetDon | null {
+    return this.projetsDons.get(projetId) || null;
+  }
+
+  getPourcentage(projetId: string | number): number {
+    const donData = this.getDonData(projetId);
+    return donData?.pourcentage || 0;
+  }
+
+  getMontantRecolte(projetId: string | number): number {
+    const donData = this.getDonData(projetId);
+    return donData?.montantRecolte || 0;
+  }
+
+  getObjectif(projetId: string | number): number {
+    const donData = this.getDonData(projetId);
+    return donData?.objectifFinancier || 0;
+  }
+
+  getNombreDonateurs(projetId: string | number): number {
+    const donData = this.getDonData(projetId);
+    return donData?.nombreDonateurs || 0;
+  }
+
+  formatMontant(montant: number): string {
+    return `${montant.toFixed(2)} MRU`;
+  }
+
+  // ===================== MEDIA =====================
+  mediaSrc(p: Projet): string {
+    return p.mediaUrl || 'assets/default-project.jpg';
+  }
+
+  onImgError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img && img.src !== 'assets/default-project.jpg') {
+      img.src = 'assets/default-project.jpg';
+    }
+  }
+
+  // ===================== MODAL DONATEURS =====================
+  selectProjet(projet: Projet): void {
+    const donData = this.getDonData(projet.id);
+    if (donData) {
+      this.selectedProjet = donData;
+      console.log('📊 [Dons] Détails ouverts pour:', donData.titre);
+    }
+  }
+
+  closeModal(): void {
+    this.selectedProjet = null;
+  }
+
+  // ===================== BADGE TYPE DON =====================
+  getBadgeClass(typeDon: string): string {
+    switch (typeDon) {
+      case 'FINANCIER': return 'bg-success';
+      case 'EVENEMENTIEL': return 'bg-primary';
+      case 'NATURE': return 'bg-warning';
+      case 'PARRAINAGE': return 'bg-info';
+      default: return 'bg-secondary';
+    }
+  }
+
+  getTypeDonIcon(typeDon: string): string {
+    switch (typeDon) {
+      case 'FINANCIER': return 'bi-cash-coin';
+      case 'EVENEMENTIEL': return 'bi-calendar-event';
+      case 'NATURE': return 'bi-box-seam';
+      case 'PARRAINAGE': return 'bi-people';
+      default: return 'bi-gift';
+    }
+  }
 }

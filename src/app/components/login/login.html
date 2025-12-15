@@ -1,80 +1,116 @@
-<div class="login-page d-flex flex-column min-vh-100">
+<!-- src/app/components/login/login.html -->
+<div class="login-container">
+  <!-- Background Elements -->
+  <div class="bg-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+  </div>
 
-  <!-- HEADER -->
-  <header class="site-header bg-white shadow-sm py-3 px-4 d-flex justify-content-between align-items-center w-100">
-    <div class="d-flex align-items-center">
-      <img src="assets/logo.png" alt="logoKheriyati" style="height:40px; border-radius:6px;">
-      <span class="ms-2 fw-bold text-primary fs-5">Kheriyati</span>
+  <!-- Login Card -->
+  <div class="login-card">
+    <!-- Logo & Header -->
+    <div class="login-header">
+      <div class="logo-circle">
+        <i class="bi bi-shield-check"></i>
+      </div>
+      <h1 class="login-title">Bon venir !</h1>
+      <p class="login-subtitle">Connectez-vous à votre compte</p>
     </div>
-    <h2 class="text-primary m-0 d-none d-md-block">ESPACE ORGANISATION</h2>
-    <div>
-      <a routerLink="/register" class="btn btn-sm btn-danger">Register</a>
-    </div>
-  </header>
 
-  <!-- BODY -->
-  <main class="flex-fill d-flex justify-content-center align-items-center py-5">
-    <div class="card p-4 shadow-lg border-0 rounded-4" style="max-width: 420px; width: 100%;">
-      <h5 class="fw-bold text-primary mb-3 text-center">VOUS AVEZ DÉJÀ UN COMPTE</h5>
-      <p class="small text-muted mb-4 text-center">
-        Bienvenue sur votre espace Organisation.<br>
-        Suivez vos dons, téléchargez vos reçus fiscaux, gérez vos informations…
-      </p>
+    <!-- Login Form -->
+    <form #loginForm="ngForm" (ngSubmit)="login(loginForm)" class="login-form">
 
-      <form (ngSubmit)="login()" novalidate>
-        <input
-          type="email"
-          [(ngModel)]="email"
-          name="email"
-          placeholder="Votre email"
-          class="form-control mb-3"
-          required
-          [disabled]="submitting"
-          autocomplete="username" />
-
-        <input
-          type="password"
-          [(ngModel)]="password"
-          name="password"
-          placeholder="Votre mot de passe"
-          class="form-control mb-3"
-          required
-          [disabled]="submitting"
-          autocomplete="current-password" />
-
-        <div *ngIf="errorMessage" class="alert alert-danger py-2 small">
-          {{ errorMessage }}
+      <!-- Email Field -->
+      <div class="form-group">
+        <label class="form-label">
+          <i class="bi bi-envelope"></i>
+          Adresse email
+        </label>
+        <div class="input-wrapper">
+          <input
+            type="email"
+            class="form-input"
+            [(ngModel)]="email"
+            name="email"
+            placeholder="exemple@email.com"
+            required
+          >
+          <div class="input-icon">
+            <i class="bi bi-at"></i>
+          </div>
         </div>
+      </div>
 
-        <button class="btn btn-primary w-100" type="submit" [disabled]="!canSubmit">
-          <span *ngIf="!submitting">Je me connecte</span>
-          <span *ngIf="submitting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-          <span class="visually-hidden" *ngIf="submitting">Connexion…</span>
-        </button>
-      </form>
+      <!-- Password Field -->
+      <div class="form-group">
+        <label class="form-label">
+          <i class="bi bi-lock"></i>
+          Mot de passe
+        </label>
+        <div class="input-wrapper">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            class="form-input"
+            [(ngModel)]="password"
+            name="password"
+            placeholder="••••••••"
+            required
+          >
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="togglePassword()"
+            tabindex="-1"
+          >
+            <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
+          </button>
+        </div>
+      </div>
 
-      <a href="#" class="text-decoration-none small d-block text-end mb-3 text-primary">
-        Mot de passe oublié ?
-      </a>
+      <!-- Error Message -->
+      <div class="alert-error" *ngIf="errorMessage">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div>
+          <strong>Erreur</strong>
+          <p>{{ errorMessage }}</p>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="btn-submit"
+        [disabled]="isSubmitting || !email || !password"
+        [class.loading]="isSubmitting"
+      >
+        <span class="btn-text" *ngIf="!isSubmitting">
+          <i class="bi bi-box-arrow-in-right me-2"></i>
+          Se connecter
+        </span>
+        <span class="btn-loader" *ngIf="isSubmitting">
+          <div class="spinner"></div>
+          Connexion en cours...
+        </span>
+      </button>
+
+    </form>
+
+    <!-- Footer -->
+    <div class="login-footer">
+      <p>
+        Pas encore de compte ?
+        <a routerLink="/register" class="signup-link">
+          Créer un compte
+          <i class="bi bi-arrow-right"></i>
+        </a>
+      </p>
     </div>
-  </main>
+  </div>
 
-  <!-- FOOTER -->
-  <footer class="footer bg-light text-center py-4 border-top w-100">
-    <p class="fw-semibold mb-1">Vous avez une question ?</p>
-    <p class="text-muted small mb-3">
-      Notre service est disponible pour vous accompagner du lundi au vendredi, de 9h30 à 18h30
-    </p>
-    <div class="d-flex justify-content-center gap-3 mb-3">
-      <a href="#" class="btn btn-outline-primary rounded-3 btn-sm">📧 Nous contacter</a>
-      <a href="tel:0996368468" class="btn btn-outline-primary rounded-3 btn-sm">📞 0996 368 468</a>
-    </div>
-    <div class="social-icons d-flex justify-content-center gap-4">
-      <a href="#"><i class="bi bi-facebook fs-5"></i></a>
-      <a href="#"><i class="bi bi-twitter fs-5"></i></a>
-      <a href="#"><i class="bi bi-linkedin fs-5"></i></a>
-      <a href="#"><i class="bi bi-youtube fs-5"></i></a>
-    </div>
-  </footer>
-
+  <!-- Decorative Text -->
+  <div class="decorative-text">
+    <p>Plateforme de gestion des dons</p>
+    <p class="text-muted">Sécurisé • Rapide • Fiable</p>
+  </div>
 </div>
