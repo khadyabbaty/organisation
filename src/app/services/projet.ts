@@ -8,6 +8,8 @@ import { Observable, throwError, map, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthService, InfoUtilisateur } from './auth';
 
+
+
 export interface ActiviteUpsert {
   titre: string;
   dateDebut: string;
@@ -18,6 +20,7 @@ export interface ActiviteUpsert {
   organisationId?: string;
   image?: File | null;
   urgent?: boolean;
+  statut?: 'EN_COURS' | 'TERMINE'; // ✅ AJOUTÉ
 }
 
 interface ActiviteApi {
@@ -33,6 +36,7 @@ interface ActiviteApi {
   urgent?: boolean;
   latitude?: number;
   longitude?: number;
+  statut?: 'EN_COURS' | 'TERMINE'; // ✅ AJOUTÉ
 }
 
 export interface Projet {
@@ -112,12 +116,6 @@ export class ProjetsApi {
   // MAPPING
   // ========================================
   private toProjet(a: any): Projet {
-    const d0 = a?.dateDebut ? new Date(a.dateDebut) : new Date();
-    const d1 = a?.dateFin ? new Date(a.dateFin) : undefined;
-
-    const statut: 'EN_COURS' | 'TERMINE' =
-      d1 ? (new Date() > d1 ? 'TERMINE' : 'EN_COURS') : 'EN_COURS';
-
     const raw = this.pickImageField(a);
     const mediaUrl = this.resolveMediaUrl(raw);
     const ext = this.basename(raw).split('.').pop()?.toLowerCase();
@@ -129,8 +127,8 @@ export class ProjetsApi {
       id: a.id,
       titre: a.titre ?? '—',
       description: a.description ?? '',
-      statut,
-      dateCreation: d0,
+      statut: a.statut ?? 'EN_COURS',
+      dateCreation: a.dateDebut ? new Date(a.dateDebut) : new Date(),
       organisationNom: a.organisationNom ?? a.organisation?.nom ?? '—',
       organisationId: a.organisationId ?? a.organisation?.id ?? undefined,
       mediaUrl,
@@ -157,8 +155,6 @@ export class ProjetsApi {
     const headers = this.authHeaders();
     console.log(`🔒 [ProjetsApi] Récupération des projets pour: ${currentUser.orgId || currentUser.username}`);
 
-    // ✅ LE BACKEND FILTRE DÉJÀ PAR ORGANISATION
-    // Pas besoin de filtrer côté client
     return this.http.get<ActiviteApi[]>(this.base, { headers }).pipe(
       map(list => {
         console.log(`📥 [ProjetsApi] ${list?.length || 0} projets reçus du serveur`);
@@ -209,7 +205,7 @@ export class ProjetsApi {
     const fd = this.toFormData(payload);
     const headers = this.authHeaders();
 
-    console.log(`🔒 [ProjetsApi] Mise à jour du projet ${id}`);
+    console.log(`🔒 [ProjetsApi] Mise à jour du projet ${id} avec statut: ${payload.statut}`);
 
     return this.http.put<ActiviteApi>(`${this.base}/${id}`, fd, { headers }).pipe(
       map(a => this.toProjet(a))
@@ -244,6 +240,7 @@ export class ProjetsApi {
     if (p.organisationId) fd.append('organisationId', p.organisationId);
     if (p.image) fd.append('image', p.image);
     if (typeof p.urgent === 'boolean') fd.append('urgent', String(p.urgent));
+    if (p.statut) fd.append('statut', p.statut); // ✅ AJOUTÉ - ENVOYER LE STATUT
     return fd;
   }
 }

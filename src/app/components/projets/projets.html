@@ -15,8 +15,9 @@
         >
       </div>
 
-      <select class="filter-select" [(ngModel)]="statut">
-        <option value="ALL">Tous les statuts</option>
+      <!-- Filtre statut -->
+      <select id="statut" [(ngModel)]="statut" class="form-control">
+        <option value="ALL">Tous les projets</option>
         <option value="EN_COURS">En cours</option>
         <option value="TERMINE">Terminé</option>
       </select>
@@ -25,18 +26,18 @@
 
   <!-- Loading -->
   <div *ngIf="loading && projets.length === 0" class="loading-state">
-    <p>Chargement des projets...</p>
+    <p>⏳ Chargement des projets...</p>
   </div>
 
   <!-- Error -->
   <div *ngIf="error && !loading && projets.length === 0" class="error-state">
-    <p>{{ error }}</p>
+    <p>⚠️ {{ error }}</p>
     <button (click)="chargerProjets()">Réessayer</button>
   </div>
 
   <!-- Empty -->
   <div *ngIf="!loading && !error && filtered.length === 0" class="empty-state">
-    <h3>Aucun projet trouvé</h3>
+    <h3>📭 Aucun projet trouvé</h3>
   </div>
 
   <!-- Grid -->
@@ -52,29 +53,45 @@
           class="media-img"
           [alt]="p.titre"
         >
+        <!-- ✅ Badge Statut -->
+        <div class="statut-badge" [class.statut-termine]="p.statut === 'TERMINE'">
+          {{ getStatutLabel(p.statut) }}
+        </div>
       </div>
 
       <!-- Body -->
       <div class="project-body">
 
+        <!-- Header with Title -->
         <div class="project-header">
           <h3 class="project-title">{{ p.titre }}</h3>
-          <span class="status-badge" [class.status-termine]="p.statut === 'TERMINE'">
-            {{ p.statut === 'EN_COURS' ? 'En cours' : 'Terminé' }}
-          </span>
         </div>
 
+        <!-- Description -->
         <p class="project-description">
           {{ p.description || 'Aucune description' }}
         </p>
 
+        <!-- Meta Info -->
         <div class="project-meta">
           <div class="meta-item">
-            🏢 {{ p.organisationNom }}
+            <span class="meta-icon">🏢</span>
+            {{ p.organisationNom }}
           </div>
 
           <div class="meta-item">
-            📅 {{ p.dateCreation | date:'dd/MM/yyyy' }}
+            <span class="meta-icon">📅</span>
+            {{ p.dateCreation | date:'dd/MM/yyyy' }}
+          </div>
+
+          <!-- ✅ Afficher le statut -->
+          <div class="meta-item statut-info">
+            <span class="meta-icon" [class.statut-icon-termine]="p.statut === 'TERMINE'">
+              {{ p.statut === 'TERMINE' ? '✅' : '⏳' }}
+            </span>
+            <span [class.statut-text-termine]="p.statut === 'TERMINE'">
+              {{ p.statut === 'TERMINE' ? 'Terminé' : 'En cours' }}
+            </span>
           </div>
         </div>
 
@@ -155,13 +172,16 @@
         ></textarea>
       </div>
 
-      <!-- STATUT -->
+      <!-- ✅ STATUT -->
       <div class="form-group">
         <label for="statut">Statut</label>
         <select id="statut" [(ngModel)]="projetModif.statut" class="form-control">
-          <option value="EN_COURS">En cours</option>
-          <option value="TERMINE">Terminé</option>
+          <option value="EN_COURS">⏳ En cours</option>
+          <option value="TERMINE">✅ Terminé</option>
         </select>
+        <small class="form-text text-muted">
+          Le statut passe automatiquement à "Terminé" si le montant demandé est atteint
+        </small>
       </div>
 
       <!-- URGENT -->
@@ -316,7 +336,7 @@
   </div>
 </div>
 
-<!-- ===================== MODAL VISUALISATION GPS (carte de consultation) ===================== -->
+<!-- ===================== MODAL VISUALISATION GPS ===================== -->
 <div class="gps-modal-overlay" *ngIf="projetGPS" (click)="fermerMapModal()">
   <div class="gps-modal-content" (click)="$event.stopPropagation()">
 
@@ -366,9 +386,10 @@
               <i class="bi bi-calendar3"></i>
               {{ projetGPS.dateCreation | date:'dd/MM/yyyy' }}
             </div>
+            <!-- ✅ Afficher statut dans la carte -->
             <div class="overlay-status">
               <span class="status-dot" [class.status-termine]="projetGPS.statut === 'TERMINE'"></span>
-              <span>{{ projetGPS.statut === 'EN_COURS' ? 'En cours' : 'Terminé' }}</span>
+              <span>{{ projetGPS.statut === 'TERMINE' ? '✅ Terminé' : '⏳ En cours' }}</span>
             </div>
           </div>
         </div>

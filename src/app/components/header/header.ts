@@ -5,7 +5,7 @@ import { Router, RouterLink, RouterLinkActive, RouterModule } from '@angular/rou
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 
-import { ProjetCreate, ProjetCreateOutput } from '../projet-create/projet-create';
+import { ProjetCreate }from '../projet-create/projet-create';
 import { ActiviteUpsert, ProjetsApi } from '../../services/projet';
 import { environment } from '../../../environments/environment';
 
@@ -125,7 +125,7 @@ export class Header {
     );
   }
 
-  handleProjetCree(ev: ProjetCreateOutput) {
+  handleProjetCree(ev: any) {
     this.submitting = true;
 
     this.getOrgId$().pipe(

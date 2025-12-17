@@ -1,6 +1,3 @@
-// ========================================
-// projets.component.ts (COMPONENT)
-// ========================================
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,8 +23,8 @@ export class Projets implements OnInit, OnDestroy {
   nouveauMedia: File | null = null;
 
   showMapSelector = false;
-  tempLatitude: number = 23.588;
-  tempLongitude: number = 58.383;
+  tempLatitude: number = 33.5731;
+  tempLongitude: number = -7.5898;
   map: any = null;
   currentMarker: any = null;
 
@@ -52,7 +49,9 @@ export class Projets implements OnInit, OnDestroy {
     if (this.mapView) this.mapView.remove();
   }
 
-  // 🔒 CHARGER LES PROJETS DE L'ORGANISATION
+  // ========================================
+  // 🔒 CHARGER LES PROJETS
+  // ========================================
   chargerProjets(): void {
     this.loading = true;
     this.error = '';
@@ -60,6 +59,7 @@ export class Projets implements OnInit, OnDestroy {
     this.projetsApi.getAllMine().subscribe({
       next: (data) => {
         console.log(`✅ ${data.length} projets chargés`);
+        console.log('📊 Projets avec statuts:', data);
         this.projets = data;
         this.loading = false;
       },
@@ -71,13 +71,18 @@ export class Projets implements OnInit, OnDestroy {
     });
   }
 
+  // ========================================
+  // 🔍 FILTRAGE
+  // ========================================
   get filtered(): Projet[] {
     let result = this.projets;
 
+    // ✅ Filtrer par statut
     if (this.statut !== 'ALL') {
       result = result.filter(p => p.statut === this.statut);
     }
 
+    // ✅ Filtrer par recherche
     if (this.search.trim()) {
       const term = this.search.toLowerCase();
       result = result.filter(p =>
@@ -94,6 +99,9 @@ export class Projets implements OnInit, OnDestroy {
     return item.id;
   }
 
+  // ========================================
+  // 📸 MEDIA
+  // ========================================
   mediaSrc(p: Projet): string {
     return p.mediaUrl || 'assets/default-project.jpg';
   }
@@ -105,8 +113,14 @@ export class Projets implements OnInit, OnDestroy {
     }
   }
 
+  // ========================================
+  // ✏️ MODIFICATION
+  // ========================================
   modifierProjet(projet: Projet): void {
-    this.projetModif = { ...projet };
+    this.projetModif = {
+      ...projet,
+      statut: projet.statut || 'EN_COURS'
+    };
     this.nouveauMedia = null;
     this.error = '';
   }
@@ -139,6 +153,7 @@ export class Projets implements OnInit, OnDestroy {
     this.loading = true;
     this.error = '';
 
+    // ✅ Vérifier GPS
     if (!this.projetModif.latitude || !this.projetModif.longitude) {
       this.error = 'La position GPS est obligatoire';
       this.loading = false;
@@ -148,19 +163,26 @@ export class Projets implements OnInit, OnDestroy {
     const payload: ActiviteUpsert = {
       titre: this.projetModif.titre.trim(),
       description: this.projetModif.description?.trim() || '',
-      dateDebut: new Date().toISOString().split('T')[0],
+      dateDebut: this.projetModif.dateCreation
+        ? new Date(this.projetModif.dateCreation).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0],
       urgent: this.projetModif.urgent || false,
       image: this.nouveauMedia || undefined,
       latitude: this.projetModif.latitude,
-      longitude: this.projetModif.longitude
+      longitude: this.projetModif.longitude,
+      statut: this.projetModif.statut || 'EN_COURS' // ✅ Envoyer le statut
     };
 
+    // ✅ Si TERMINÉ, ajouter dateFin
     if (this.projetModif.statut === 'TERMINE') {
       payload.dateFin = new Date().toISOString().split('T')[0];
     }
 
+    console.log('[Projets] Sauvegarde du projet avec statut:', payload.statut);
+
     this.projetsApi.update(this.projetModif.id, payload).subscribe({
       next: (updated) => {
+        console.log('✅ Projet mis à jour:', updated);
         const index = this.projets.findIndex(p => p.id === updated.id);
         if (index !== -1) this.projets[index] = updated;
         this.loading = false;
@@ -168,12 +190,16 @@ export class Projets implements OnInit, OnDestroy {
         alert('✅ Projet modifié');
       },
       error: (err) => {
+        console.error('❌ Erreur:', err);
         this.error = err.error?.message || 'Erreur de sauvegarde';
         this.loading = false;
       }
     });
   }
 
+  // ========================================
+  // 🗑️ SUPPRESSION
+  // ========================================
   supprimerProjet(id: string | number): void {
     if (!confirm('⚠️ Supprimer ce projet ?')) return;
 
@@ -193,10 +219,12 @@ export class Projets implements OnInit, OnDestroy {
     });
   }
 
-  // === MAP FUNCTIONS ===
+  // ========================================
+  // 🗺️ CARTE - SÉLECTION
+  // ========================================
   ouvrirCarteSelection(): void {
-    this.tempLatitude = this.projetModif?.latitude || 23.588;
-    this.tempLongitude = this.projetModif?.longitude || 58.383;
+    this.tempLatitude = this.projetModif?.latitude || 33.5731;
+    this.tempLongitude = this.projetModif?.longitude || -7.5898;
     this.showMapSelector = true;
     setTimeout(() => this.initSelectionMap(), 100);
   }
@@ -210,16 +238,21 @@ export class Projets implements OnInit, OnDestroy {
   }
 
   initSelectionMap(): void {
-    if (this.map) return;
+    if (this.map) {
+      this.map.invalidateSize();
+      return;
+    }
     this.map = L.map('map').setView([this.tempLatitude, this.tempLongitude], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',
       maxZoom: 19
     }).addTo(this.map);
+
     this.creerMarqueur(this.tempLatitude, this.tempLongitude);
+
     this.map.on('click', (e: any) => {
-      this.tempLatitude = e.latlng.lat;
-      this.tempLongitude = e.latlng.lng;
+      this.tempLatitude = Number(e.latlng.lat.toFixed(6));
+      this.tempLongitude = Number(e.latlng.lng.toFixed(6));
       if (this.currentMarker) {
         this.currentMarker.setLatLng([this.tempLatitude, this.tempLongitude]);
       } else {
@@ -235,11 +268,13 @@ export class Projets implements OnInit, OnDestroy {
       iconSize: [40, 40],
       iconAnchor: [20, 40]
     });
+
     if (this.currentMarker) this.map.removeLayer(this.currentMarker);
+
     this.currentMarker = L.marker([lat, lng], { icon, draggable: true }).addTo(this.map);
     this.currentMarker.on('dragend', (e: any) => {
-      this.tempLatitude = e.target.getLatLng().lat;
-      this.tempLongitude = e.target.getLatLng().lng;
+      this.tempLatitude = Number(e.target.getLatLng().lat.toFixed(6));
+      this.tempLongitude = Number(e.target.getLatLng().lng.toFixed(6));
     });
   }
 
@@ -258,8 +293,8 @@ export class Projets implements OnInit, OnDestroy {
     if (!this.map) return;
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        this.tempLatitude = pos.coords.latitude;
-        this.tempLongitude = pos.coords.longitude;
+        this.tempLatitude = Number(pos.coords.latitude.toFixed(6));
+        this.tempLongitude = Number(pos.coords.longitude.toFixed(6));
         this.map.setView([this.tempLatitude, this.tempLongitude], 15);
         if (this.currentMarker) {
           this.currentMarker.setLatLng([this.tempLatitude, this.tempLongitude]);
@@ -272,6 +307,9 @@ export class Projets implements OnInit, OnDestroy {
     );
   }
 
+  // ========================================
+  // 🗺️ CARTE - VISUALISATION
+  // ========================================
   hasGPS(p: Projet): boolean {
     return p.latitude != null && p.longitude != null;
   }
@@ -301,17 +339,22 @@ export class Projets implements OnInit, OnDestroy {
       attribution: '© OpenStreetMap contributors',
       maxZoom: 19
     }).addTo(this.mapView);
+
     const icon = L.divIcon({
       className: 'custom-marker',
       html: `<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 40px; height: 40px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 3px solid white; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);"></div>`,
       iconSize: [40, 40],
       iconAnchor: [20, 40]
     });
+
     const marker = L.marker([latitude, longitude], { icon }).addTo(this.mapView);
     marker.bindPopup(`<strong>${this.projetGPS.titre}</strong><br>${this.projetGPS.organisationNom}`).openPopup();
     L.circle([latitude, longitude], { color: '#667eea', fillColor: '#667eea', fillOpacity: 0.2, radius: 200 }).addTo(this.mapView);
   }
 
+  // ========================================
+  // 📍 ACTIONS GPS
+  // ========================================
   ouvrirDirections(): void {
     if (this.projetGPS) {
       const url = `https://www.google.com/maps/dir/?api=1&destination=${this.projetGPS.latitude},${this.projetGPS.longitude}`;
@@ -331,5 +374,18 @@ export class Projets implements OnInit, OnDestroy {
     const coords = `${this.projetGPS.latitude}, ${this.projetGPS.longitude}`;
     navigator.clipboard.writeText(coords);
     alert(`✅ Coordonnées copiées: ${coords}`);
+  }
+
+  // ========================================
+  // 🏷️ HELPER - Statut badge
+  // ========================================
+  getStatutClass(statut: string): string {
+    if (statut === 'TERMINE') return 'badge-success';
+    return 'badge-info';
+  }
+
+  getStatutLabel(statut: string): string {
+    if (statut === 'TERMINE') return '✅ Terminé';
+    return '⏳ En cours';
   }
 }

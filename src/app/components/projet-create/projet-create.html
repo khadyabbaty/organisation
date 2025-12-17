@@ -9,8 +9,9 @@
       novalidate
       [attr.aria-busy]="submitting"
     >
-      <!-- Titre -->
-      <label for="titre">Titre du projet <span aria-hidden="true">*</span></label>
+
+      <!-- ================= TITRE ================= -->
+      <label for="titre">Titre du projet <span>*</span></label>
       <input
         id="titre"
         type="text"
@@ -18,16 +19,14 @@
         [(ngModel)]="titre"
         #titreCtrl="ngModel"
         required
-        [disabled]="submitting"
         autocomplete="off"
-        placeholder="Nom du projet"
       />
       <small class="form-error" *ngIf="titreCtrl.invalid && (titreCtrl.dirty || f.submitted)">
-        Le titre est obligatoire.
+        Le titre est obligatoire
       </small>
 
-      <!-- Description -->
-      <label for="description">Description <span aria-hidden="true">*</span></label>
+      <!-- ================= DESCRIPTION ================= -->
+      <label for="description">Description <span>*</span></label>
       <textarea
         id="description"
         name="description"
@@ -35,174 +34,125 @@
         #descCtrl="ngModel"
         rows="4"
         required
-        [disabled]="submitting"
-        placeholder="Décrire le projet"
       ></textarea>
       <small class="form-error" *ngIf="descCtrl.invalid && (descCtrl.dirty || f.submitted)">
-        La description est obligatoire.
+        La description est obligatoire
       </small>
 
-      <!-- Dates & Urgent -->
+      <!-- ================= TYPE DE PROJET ================= -->
+      <label for="typeActivite">Type de projet <span>*</span></label>
+      <select
+        id="typeActivite"
+        name="typeActivite"
+        [(ngModel)]="typeActivite"
+        required
+      >
+        <option *ngFor="let type of typesDisponibles" [value]="type.value">
+          {{ type.label }}
+        </option>
+      </select>
+
+      <!-- ================= CHAMPS CONDITIONNELS ================= -->
+
+      <!-- FINANCEMENT -->
+      <div *ngIf="typeActivite === 'FINANCEMENT'">
+        <label>Montant à financer (€)</label>
+        <input
+          type="number"
+          name="montantFinancier"
+          [(ngModel)]="montantFinancier"
+          min="0"
+          step="0.01"
+        />
+      </div>
+
+      <!-- EVENEMENT -->
+      <div *ngIf="typeActivite === 'EVENEMENT'">
+        <label>Lieu de l'événement</label>
+        <input
+          type="text"
+          name="lieuEvenement"
+          [(ngModel)]="lieuEvenement"
+        />
+      </div>
+
+      <!-- PARRAINAGE -->
+      <div *ngIf="typeActivite === 'PARRAINAGE'">
+        <label>Nombre de bénéficiaires</label>
+        <input
+          type="number"
+          name="nombreBeneficiaires"
+          [(ngModel)]="nombreBeneficiaires"
+          min="1"
+        />
+      </div>
+
+      <!-- ================= DATES & URGENT ================= -->
       <div class="form-inline">
         <div>
-          <label for="dateDebut">Date début</label>
-          <input
-            id="dateDebut"
-            type="date"
-            name="dateDebut"
-            [(ngModel)]="dateDebut"
-            [disabled]="submitting"
-          />
+          <label>Date début</label>
+          <input type="date" name="dateDebut" [(ngModel)]="dateDebut" />
         </div>
         <div>
-          <label for="dateFin">Date fin</label>
-          <input
-            id="dateFin"
-            type="date"
-            name="dateFin"
-            [(ngModel)]="dateFin"
-            [disabled]="submitting"
-          />
+          <label>Date fin</label>
+          <input type="date" name="dateFin" [(ngModel)]="dateFin" />
         </div>
-        <div class="urgent-check">
-          <label for="urgent">
-            <input
-              id="urgent"
-              type="checkbox"
-              [(ngModel)]="urgent"
-              name="urgent"
-              [disabled]="submitting"
-            />
-            Urgent
-          </label>
-        </div>
+        <label class="urgent-check">
+          <input type="checkbox" name="urgent" [(ngModel)]="urgent" />
+          Urgent
+        </label>
       </div>
 
-      <!-- Lieu -->
+      <!-- ================= LOCALISATION ================= -->
       <label>Localisation du projet</label>
+      <button type="button" (click)="ouvrirMapSelector()">📍 Choisir sur la carte</button>
 
-      <div class="gps-actions">
-        <button type="button" class="btn-gps" (click)="ouvrirMapSelector()" [disabled]="submitting">
-          📍 Choisir sur la carte
-        </button>
-        <span class="gps-help">ou utilisez votre position actuelle</span>
-      </div>
-
-      <!-- Modal GPS intégré -->
-      <div class="gps-modal-overlay" *ngIf="showMapSelector" (click)="fermerCarteSelection()">
-        <div class="gps-modal-content" (click)="$event.stopPropagation()">
-
-          <!-- Header -->
-          <div class="gps-modal-header">
-            <div class="gps-header-info">
-              <h2><i class="bi bi-pin-map-fill"></i> Sélectionner la position</h2>
-              <p class="gps-instruction">Déplacez la carte pour définir la position du projet</p>
-            </div>
-            <button class="gps-close-btn" (click)="fermerCarteSelection()" type="button">
-              <i class="bi bi-x-lg"></i>
-            </button>
-          </div>
-
-          <!-- Map Container -->
-          <div class="gps-map-container">
-            <div id="mapSelector" class="gps-map"></div>
-
-            <!-- CARET CENTRÉE -->
-            <div class="map-center-caret">
-              <i class="bi bi-cursor-fill"></i>
-            </div>
-
-            <!-- Bouton “Me localiser” -->
-            <button class="locate-me-btn" (click)="centrerSurMaPosition()" title="Me localiser">
-              <i class="bi bi-crosshair"></i>
-            </button>
-          </div>
-
-          <!-- Position actuelle affichée -->
-          <div class="map-position-display" *ngIf="tempLatitude && tempLongitude">
-            <div class="position-card">
-              <h4><i class="bi bi-cursor-fill"></i> Position sélectionnée</h4>
-              <div class="position-coords">
-                <span><strong>Lat:</strong> {{ tempLatitude | number:'1.6-6' }}</span>
-                <span><strong>Long:</strong> {{ tempLongitude | number:'1.6-6' }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Actions Footer -->
-          <div class="gps-modal-footer">
-            <button class="gps-action-btn btn-cancel" (click)="fermerCarteSelection()">
-              <i class="bi bi-x-circle-fill"></i> Annuler
-            </button>
-            <button class="gps-action-btn btn-validate" (click)="validerPosition()"
-              [disabled]="!tempLatitude || !tempLongitude">
-              <i class="bi bi-check-circle-fill"></i> Valider la position
-            </button>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Affichage des coordonnées choisies -->
-      <p class="coords" *ngIf="latitude && longitude">
-        ✅ Latitude : {{ latitude }} <br />
-        ✅ Longitude : {{ longitude }}
+      <p *ngIf="latitude && longitude" class="coords">
+        Latitude : {{ latitude }} <br />
+        Longitude : {{ longitude }}
       </p>
 
+      <!-- ================= IMAGE ================= -->
+      <label>Image</label>
+      <input type="file" accept="image/*" (change)="onFileSelected($event)" />
 
-
-
-
-
-      <!-- Image -->
-      <label for="image">Image</label>
-      <!-- ⛔ plus de 'video/*' -->
-      <input
-        id="image"
-        type="file"
-        (change)="onFileSelected($event)"
-        accept="image/*"
-        [disabled]="submitting"
-      />
-
-      <!-- Aperçu -->
-      <!-- <div *ngIf="mediaPreview" class="media-preview">
-        <img *ngIf="isImagePreview" [src]="mediaPreview" alt="Aperçu de l’image sélectionnée" />
-      </div> -->
-
-      <!-- Erreur globale du formulaire -->
-      <div *ngIf="errorMessage" class="form-error" aria-live="polite">
+      <!-- ================= ERREUR ================= -->
+      <div *ngIf="errorMessage" class="form-error">
         {{ errorMessage }}
       </div>
 
-      <!-- Actions -->
+      <!-- ================= ACTIONS ================= -->
       <div class="actions">
         <button type="submit" [disabled]="!f.valid || submitting">
-          <ng-container *ngIf="!submitting; else loadingTpl">Créer</ng-container>
+          Créer
         </button>
 
-        <button
-          type="button"
-          class="btn-secondary"
-          (click)="onCancel()"
-          [disabled]="submitting"
-        >
-          Annuler
-        </button>
-
-        <button
-          type="button"
-          class="btn-light"
-          (click)="reset(f)"
-          [disabled]="submitting"
-        >
-          Réinitialiser
-        </button>
+        <button type="button" (click)="onCancel()">Annuler</button>
       </div>
 
-      <ng-template #loadingTpl>
-        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-      </ng-template>
     </form>
+  </div>
+</div>
+
+<!-- ================= MODAL GPS ================= -->
+<div class="gps-modal-overlay" *ngIf="showMapSelector" (click)="fermerCarteSelection()">
+  <div class="gps-modal-content" (click)="$event.stopPropagation()">
+
+    <div class="gps-modal-header">
+      <h3>📍 Sélectionner la position</h3>
+      <button (click)="fermerCarteSelection()">✖</button>
+    </div>
+
+    <div id="mapSelector" class="gps-map"></div>
+
+    <div *ngIf="tempLatitude && tempLongitude" class="map-position-display">
+      <strong>Lat:</strong> {{ tempLatitude | number:'1.6-6' }} |
+      <strong>Long:</strong> {{ tempLongitude | number:'1.6-6' }}
+    </div>
+
+    <div class="gps-modal-footer">
+      <button (click)="validerPosition()">Valider</button>
+    </div>
+
   </div>
 </div>
